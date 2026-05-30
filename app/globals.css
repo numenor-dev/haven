@@ -47,9 +47,13 @@
 }
 
 :root {
-  --background-image: url('../public/haven-light.jpg');
-  --background: oklch(0.967 0.001 286.375);
-  --foreground: oklch(96.569% 0.00211 14.336);
+  --background:
+    radial-gradient(ellipse at 15% 45%, rgba(255, 255, 255, 0.35) 0%, rgba(255, 255, 255, 0) 30%),
+    radial-gradient(ellipse at 68% 38%, rgba(255, 255, 255, 0.25) 0%, rgba(255, 255, 255, 0) 28%),
+    radial-gradient(ellipse at 42% 58%, rgba(255, 255, 255, 0.15) 0%, rgba(255, 255, 255, 0) 20%),
+    linear-gradient(180deg, #1a6ea6 0%, #2d9fd4 30%, #74bce8 60%, #c8e8f5 82%, #e8f4fb 100%);
+  --background-two: oklch(92.999% 0.0095 286.055);
+  --foreground: oklch(96.569% 0.00211 14.336); /* zinc-100 */
   --card: oklch(1 0 0);
   --card-foreground: oklch(0.141 0.005 285.823);
   --popover: oklch(1 0 0);
@@ -83,10 +87,13 @@
 }
 
 .dark {
-  --background-image: url('../public/haven-dark.jpg');
-  --background: oklch(0.92 0.004 286.32);
-  --foreground: oklch(0.92 0.004 286.32);
-  /* zinc-200 */
+  --background:
+    radial-gradient(ellipse at 25% 40%, rgba(60, 75, 105, 0.4) 0%, rgba(60, 75, 105, 0) 32%),
+    radial-gradient(ellipse at 72% 28%, rgba(50, 65, 95, 0.35) 0%, rgba(50, 65, 95, 0) 27%),
+    radial-gradient(ellipse at 50% 62%, rgba(45, 60, 88, 0.25) 0%, rgba(45, 60, 88, 0) 22%),
+    linear-gradient(180deg, #020810 0%, #071428 30%, #0e2444 58%, #1a3a5c 80%, #264e6e 100%);
+  --background-two: oklch(24.477% 0.00566 285.91);
+  --foreground: oklch(0.92 0.004 286.32); /* zinc-200 */
   --card: oklch(0.21 0.006 285.885);
   --card-foreground: oklch(0.985 0 0);
   --popover: oklch(0.21 0.006 285.885);
@@ -133,24 +140,9 @@
 }
 
 .marketing-bg {
-  background-image: var(--background-image);
-  background-size: cover;
-  background-position: center;
-  background-attachment: fixed;
-  background-repeat: no-repeat;
-  position: relative;
-  isolation: isolate;
+  background: var(--background);
 }
 
-.marketing-bg::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(to bottom,
-      transparent 0%,
-      transparent 40%,
-      oklch(0.967 0.001 286.375) 75% /* zinc-100 hardcoded */
-    );
-  pointer-events: none;
-  z-index: 1;
+.intake-bg {
+  background: var(--background-two);
 }

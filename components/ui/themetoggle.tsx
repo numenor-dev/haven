@@ -14,8 +14,6 @@ export function ThemeToggle() {
 
     if (!isMountedRef) return null;
 
-    console.log(theme)
-
     return (
         <button
             onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
