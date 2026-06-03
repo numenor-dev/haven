@@ -15,7 +15,7 @@ export default function Header() {
 
     // Subtle border appears on scroll so the header separates from page content
     const borderOpacity = useTransform(scrollY, [0, 60], [0, 1]);
-    const backdropOpacity = useTransform(scrollY, [0, 60], [0, 0.8]);
+    const backdropOpacity = useTransform(scrollY, [0, 10], [0, 0.9]);
 
     return (
         <motion.header
@@ -25,11 +25,11 @@ export default function Header() {
             transition={{ duration: 0.4, ease: "easeOut" }}
         >
             <motion.div
-                className="absolute inset-0 bg-zinc-50 backdrop-blur-md"
+                className="absolute inset-0 bg-sky-800/70 backdrop-blur-2xl"
                 style={{ opacity: backdropOpacity }}
             />
             <motion.div
-                className="absolute bottom-0 left-0 right-0 h-px bg-zinc-200"
+                className="absolute bottom-0 left-0 right-0 h-px bg-zinc-100/20"
                 style={{ opacity: borderOpacity }}
             />
 
@@ -75,19 +75,6 @@ export default function Header() {
                     </motion.div>
 
                     <ThemeToggle />
-
-                    <motion.div
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        transition={{ delay: 0.42 }}
-                    >
-                        <Link
-                            href="/signup"
-                            className="text-sm font-medium bg-sky-950/50 text-zinc-50 px-4 py-2 rounded-lg hover:bg-sky-950 transition-all duration-200"
-                        >
-                            Get started
-                        </Link>
-                    </motion.div>
                 </div>
             </div>
         </motion.header>

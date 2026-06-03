@@ -1,5 +1,5 @@
 import { notFound } from "next/navigation";
-import IntakeSession from "./_components/IntakeSession";
+import IntakeSession from "../../../components/intake/IntakeSession";
 
 const testSlugs = ["select-law-group", "demo"]
 

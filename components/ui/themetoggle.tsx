@@ -1,18 +1,18 @@
 'use client';
 
-import { useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import { useTheme } from 'next-themes';
-
 
 export function ThemeToggle() {
     const { theme, setTheme } = useTheme()
-    const isMountedRef = useRef(false);
+    const [mounted, setMounted] = useState(false);
 
     useEffect(() => {
-        isMountedRef.current = true;
-    })
+        // eslint-disable-next-line react-hooks/set-state-in-effect
+        setMounted(true);
+    }, []);
 
-    if (!isMountedRef) return null;
+    if (!mounted) return null;
 
     return (
         <button

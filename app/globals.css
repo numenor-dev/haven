@@ -51,7 +51,7 @@
     radial-gradient(ellipse at 15% 45%, rgba(255, 255, 255, 0.35) 0%, rgba(255, 255, 255, 0) 30%),
     radial-gradient(ellipse at 68% 38%, rgba(255, 255, 255, 0.25) 0%, rgba(255, 255, 255, 0) 28%),
     radial-gradient(ellipse at 42% 58%, rgba(255, 255, 255, 0.15) 0%, rgba(255, 255, 255, 0) 20%),
-    linear-gradient(180deg, #1a6ea6 0%, #2d9fd4 30%, #74bce8 60%, #c8e8f5 82%, #e8f4fb 100%);
+    linear-gradient(180deg, #0b609a 0%, #2381ac 30%, #117dc0 45%, #c8e8f5 87%, #e8f4fb 100%);
   --background-two: oklch(92.999% 0.0095 286.055);
   --foreground: oklch(96.569% 0.00211 14.336); /* zinc-100 */
   --card: oklch(1 0 0);
