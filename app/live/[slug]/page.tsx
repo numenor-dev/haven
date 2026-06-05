@@ -1,7 +1,10 @@
 import { notFound } from "next/navigation";
-import IntakeSession from "../../../components/intake/IntakeSession";
+import LiveChat from "@/components/livechat/LiveChat";
 
-const testSlugs = ["select-law-group", "demo"]
+const testSlugs = [
+    "select-law-group", "demo",
+    "the-other-law", "demo"
+]
 
 export default async function CustomPage({
     params,
@@ -12,5 +15,5 @@ export default async function CustomPage({
 
     if (!testSlugs.includes(slug)) notFound()
 
-    return <IntakeSession firm={slug} />
+    return <LiveChat firm={slug} />
 }

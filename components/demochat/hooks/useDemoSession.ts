@@ -1,5 +1,3 @@
-'use client';
-
 import {
     useCallback,
     useEffect,
@@ -9,20 +7,16 @@ import {
 import {
     Message,
     SessionStatus,
-    IntakeSessionProps,
-    IntakeSessionReturn
+    DemoSessionProps,
+    DemoSessionReturn
 } from "@/types/types";
-import { useStream } from "./useStream";
+import { useStream } from "../../hooks/useStream";
 
 
-export default function useIntakeSession({
-    firm,
-    isDemo,
-    isActive,
-}: IntakeSessionProps): IntakeSessionReturn {
+export default function useDemoSession({ isActive }: DemoSessionProps): DemoSessionReturn {
     const [status, setStatus] = useState<SessionStatus>("idle");
     const [messages, setMessages] = useState<Message[]>([]);
-    const [sessionId, setSessionId] = useState<string | null>(null);
+    const [error, setError] = useState<Error | null>(null);
 
     const appendToLastMessage = useCallback((text: string) => {
         setMessages((prev) => {
@@ -40,26 +34,33 @@ export default function useIntakeSession({
         onChunk: appendToLastMessage,
         onComplete: () => setStatus("user_turn"),
         onError: (error) => {
-            console.error("[useIntakeSession] Stream error:", error);
-            setStatus("user_turn");
+            console.error("[useDemoSession] Stream error:", error);
+            setError(error);
+            setStatus("error");
         },
     });
+
+    const cancel = useCallback(() => {
+        if (status !== "streaming") return;
+        cancelStream();
+        setStatus("user_turn");
+    }, [status, cancelStream]);
 
     const start = useCallback(() => {
         if (status !== "idle") return;
         setStatus("streaming");
         setMessages([{ role: "assistant", content: "" }]);
-        startStream([], { firm, isDemo });
-    }, [status, firm, isDemo, startStream]);
+        startStream([], { isDemo: true });
+    }, [status, startStream]);
 
     const hasStarted = useRef(false);
 
     useEffect(() => {
-        if (isActive && !hasStarted.current) {
-            hasStarted.current = true;
-            Promise.resolve().then(start);
-        }
-    }, [isActive, start]);
+        if (!isActive || hasStarted.current) return;
+        hasStarted.current = true;
+        Promise.resolve().then(start);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [isActive]); // start intentionally omitted since ref guards reinvocation
 
     const sendMessage = useCallback(
         (content: string) => {
@@ -70,10 +71,18 @@ export default function useIntakeSession({
 
             setMessages([...updatedHistory, { role: "assistant", content: "" }]);
             setStatus("streaming");
-            startStream(updatedHistory, { firm, isDemo });
+            startStream(updatedHistory, { isDemo: true });
         },
-        [status, messages, firm, isDemo, startStream]
+        [status, messages, startStream]
     );
 
-    return { status, messages, sessionId, start, sendMessage, cancelStream };
+    const reset = useCallback(() => {
+        cancelStream();
+        setStatus("idle");
+        setMessages([]);
+        setError(null);
+        hasStarted.current = false;
+    }, [cancelStream]);
+
+    return { status, messages, sendMessage, cancel, error, reset };
 }

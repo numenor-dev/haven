@@ -32,6 +32,7 @@ one at a time. Do not ask follow-up questions or deviate from the script since t
 3. "Were any other parties involved?"
 4. "What is your current insurance situation? For example, do you have PIP coverage,
    and have you been in contact with any insurance companies yet?"
+5. "Have you spoken with an attorney about this incident before?"
 
 After the 5th answer, thank the client warmly, let them know the attorney will review
 their information before the consultation, and end the session by saying exactly:
@@ -42,6 +43,9 @@ Do not ask any further questions after this closing message.
 
 // TODO: Replace with full RAG-backed system prompt when private backend is ready
 const livePrompt = demoPrompt;
+const demoModel = "claude-haiku-4-5-20251001";  // cost-optimized for demo
+const liveModel = "claude-sonnet-4-6";   // quality for live sessions
+
 
 
 export async function POST(req: NextRequest) {
@@ -53,15 +57,20 @@ export async function POST(req: NextRequest) {
             isDemo?: boolean;
         };
 
+        if (!isDemo && !firm) {
+            return new Response(
+                JSON.stringify({ error: "firm is required for live sessions"}),
+                { status: 400, headers: { "Content-Type": "application/json" } }
+            );
+        }
+
         const systemPrompt = isDemo ? demoPrompt : livePrompt;
-        // Use Haiku for demo (cost) and Sonnet for real sessions (quality)
-        const model = isDemo
-            ? "claude-haiku-4-5-20251001"
-            : "claude-sonnet-4-6";
+        
+        const model = isDemo ? demoModel : liveModel;
 
         const stream = await anthropic.messages.stream({
             model,
-            max_tokens: 1024,
+            max_tokens: 2048,
             system: systemPrompt,
             messages,
         });
@@ -76,14 +85,12 @@ export async function POST(req: NextRequest) {
                         const line = `data: ${JSON.stringify(chunk)}\n\n`;
                         controller.enqueue(encoder.encode(line));
 
-                        // Close cleanly on message_stop — client loop will break
                         if (chunk.type === "message_stop") {
                             break;
                         }
                     }
                 } catch (streamError) {
                     console.error("[stream route] Stream error:", streamError);
-                    // Send a well-formed error event so the client can handle it
                     const errorEvent = `data: ${JSON.stringify({ type: "error", error: "Stream interrupted" })}\n\n`;
                     controller.enqueue(encoder.encode(errorEvent));
                 } finally {

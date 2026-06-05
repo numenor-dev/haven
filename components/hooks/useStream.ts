@@ -1,9 +1,17 @@
 'use client';
 
-import { useCallback, useRef } from "react";
+import {
+    useCallback,
+    useRef
+} from "react";
+import {
+    parseSSELine,
+    getTextDelta,
+    isMessageStop,
+    isStreamError
+} from "@/lib/streaming";
 import {
     Message,
-    StreamChunk,
     StreamOptions,
     UseStreamProps,
     UseStreamReturn
@@ -11,12 +19,18 @@ import {
 
 export function useStream({ onChunk, onComplete, onError }: UseStreamProps): UseStreamReturn {
     const abortControllerRef = useRef<AbortController | null>(null);
+    const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
     const startStream = useCallback(
         async (messageHistory: Message[], options: StreamOptions) => {
             // Cancel any in-flight stream before starting a new one
             abortControllerRef.current?.abort();
+            if (timeoutRef.current) clearTimeout(timeoutRef.current);
+
             abortControllerRef.current = new AbortController();
+            timeoutRef.current = setTimeout(() => abortControllerRef.current?.abort(), 15_000);
+
+            let reader;
 
             try {
                 const response = await fetch("/api/intake/stream", {
@@ -33,36 +47,41 @@ export function useStream({ onChunk, onComplete, onError }: UseStreamProps): Use
                     throw new Error(`Stream request failed: ${response.status}`);
                 }
 
-                const reader = response.body?.getReader();
+                reader = response.body?.getReader();
                 if (!reader) throw new Error("No readable stream on response body");
 
                 const decoder = new TextDecoder();
+                let lineBuffer = '';
+                let completed = false;
 
                 while (true) {
                     const { done, value } = await reader.read();
                     if (done) break;
 
-                    const lines = decoder
-                        .decode(value)
-                        .split("\n")
-                        .filter((line) => line.startsWith("data: "));
+                    lineBuffer += decoder.decode(value, { stream: true })
+
+                    const lines = lineBuffer.split('\n');
+                    lineBuffer = lines.pop() ?? '';
 
                     for (const line of lines) {
                         try {
-                            const parsed: StreamChunk = JSON.parse(line.slice(6));
+                            const chunk = parseSSELine(line);
+                            if (!chunk) continue;
 
-                            if (
-                                parsed.type === "content_block_delta" &&
-                                parsed.delta?.type === "text_delta" &&
-                                parsed.delta.text
-                            ) {
-                                onChunk(parsed.delta.text);
+                            const text = getTextDelta(chunk);
+                            if (text) onChunk(text);
+
+                            if (isStreamError(chunk)) {
+                                onError(new Error(chunk.error));
+                                return;
                             }
 
-                            if (parsed.type === "message_stop") {
+                            if (isMessageStop(chunk)) {
+                                completed = true;
                                 onComplete();
                                 return;
                             }
+                            // parseSSELine handles JSON parse errors internally and this catches unexpected throws
                         } catch {
                             if (process.env.NODE_ENV === "development") {
                                 console.warn("[useStream] Failed to parse SSE line:", line);
@@ -71,13 +90,16 @@ export function useStream({ onChunk, onComplete, onError }: UseStreamProps): Use
                     }
                 }
 
-                // Reader finished without a message_stop — treat as complete
-                onComplete();
+                if (!completed) onComplete();
             } catch (error) {
+                reader?.cancel();
                 // AbortError is intentional (cancelStream called) — not an error
                 if (error instanceof DOMException && error.name === "AbortError") return;
                 console.error("[useStream] Stream error:", error);
                 onError(error instanceof Error ? error : new Error(String(error)));
+            } finally {
+                clearTimeout(timeoutRef.current ?? undefined);
+                timeoutRef.current = null;
             }
         },
         [onChunk, onComplete, onError]
