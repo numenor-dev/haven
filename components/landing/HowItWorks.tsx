@@ -16,7 +16,7 @@ export default function HowItWorks() {
                     observer.disconnect();
                 }
             },
-            { threshold: 0.3 }
+            { threshold: 0.7 }
         )
         if (sectionRef.current) observer.observe(sectionRef.current)
         return () => observer.disconnect();
@@ -25,17 +25,20 @@ export default function HowItWorks() {
     return (
         <div
             ref={sectionRef}
-            className="grid grid-cols-1 px-10 md:grid-cols-2 md:gap-x-10 gap-y-10 mt-20 max-w-6xl mx-auto">
-            <p className="text-lg">
-                Haven intelligently captures potential client
-                needs to save your time and theirs. Haven will
-                learn the practice area the client is reaching out for,
-                such as workplace injury, bicycle accidents, or pedestrian injury
-                and then asks contextually based questions for optimum clarity. Then,
-                a PDF is generated and automatically emailed to the legal team.
-            </p>
+            className="flex flex-col max-w-lg sm:max-w-2xl md:max-w-3xl lg:max-w-4xl mx-auto space-y-16">
             <div>
                 <DemoChat isActive={demoStarted} />
+            </div>
+            <div className="mx-auto space-y-1 max-w-sm md:max-w-2xl">
+                <h2 className="text-4xl font-semibold tracking-tight">Intake Automated</h2>
+                <p>
+                    Haven intelligently captures potential client
+                    needs to save your time and theirs. Haven will
+                    learn the practice area the client is reaching out for,
+                    such as workplace injury, bicycle accidents, or pedestrian injury
+                    and then asks contextually based questions for optimum clarity. Then,
+                    a PDF is generated and automatically emailed to the legal team.
+                </p>
             </div>
         </div>
     )

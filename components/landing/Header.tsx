@@ -25,7 +25,7 @@ export default function Header() {
             transition={{ duration: 0.4, ease: "easeOut" }}
         >
             <motion.div
-                className="absolute inset-0 bg-sky-800/70 backdrop-blur-2xl"
+                className="absolute inset-0 bg-sky-700/70 dark:bg-zinc-950 backdrop-blur-2xl"
                 style={{ opacity: backdropOpacity }}
             />
             <motion.div

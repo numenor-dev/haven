@@ -2,7 +2,7 @@
 
 export default function Hero() {
     return (
-        <div className="flex flex-col items-center space-y-3 xl:space-y-5 mt-48">
+        <div className="flex flex-col items-center space-y-3 xl:space-y-5 mt-48 mb-20">
             <h1 className="
             text-5xl xl:text-6xl text-white dark:text-zinc-200
             font-semibold tracking-tighter leading-14 md:leading-16 max-w-sm md:max-w-2xl xl:max-w-lg text-center"

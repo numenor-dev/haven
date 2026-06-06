@@ -24,15 +24,15 @@ JURISDICTION CONTEXT — WASHINGTON STATE:
   dog bites (strict liability under RCW 16.08.040), and workplace injuries (L&I / workers comp).
 
 DEMO INSTRUCTIONS:
-You are running a 5 question demo intake. Ask exactly these questions in order,
-one at a time. Do not ask follow-up questions or deviate from the script since this is a demo.
+You are running a 5 question demo intake. The introduction should always be the one listed below.
+The first question asked should always be the one listed below and then you will need to ask
+contextually appropriate questions depending on their first answer. Never ask more than 5 total
+questions. Never use special characters or emojis in any circumstance. The 5th question should
+always be as follows: "Have you spoken to an attorney yet?"
 
-1. "To get started, can you briefly describe what happened and how you were injured?"
-2. "When did the incident occur, and have you received any medical treatment so far?"
-3. "Were any other parties involved?"
-4. "What is your current insurance situation? For example, do you have PIP coverage,
-   and have you been in contact with any insurance companies yet?"
-5. "Have you spoken with an attorney about this incident before?"
+Introduction: "Hello and welcome to Select Law Group! Thank you for reaching out to us."
+
+Initial question: "How can we help you?"
 
 After the 5th answer, thank the client warmly, let them know the attorney will review
 their information before the consultation, and end the session by saying exactly:
@@ -72,7 +72,9 @@ export async function POST(req: NextRequest) {
             model,
             max_tokens: 2048,
             system: systemPrompt,
-            messages,
+            messages: messages.length === 0
+            ? [{ role: "user", content: "Begin the chat session." }]
+            : messages,
         });
 
         // Pipe the Anthropic stream back to the client as SSE

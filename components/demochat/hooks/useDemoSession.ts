@@ -59,8 +59,15 @@ export default function useDemoSession({ isActive }: DemoSessionProps): DemoSess
         if (!isActive || hasStarted.current) return;
         hasStarted.current = true;
         Promise.resolve().then(start);
+
     // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [isActive]); // start intentionally omitted since ref guards reinvocation
+
+    useEffect(() => {
+        return () => {
+            cancelStream();
+        }
+    }, []);
 
     const sendMessage = useCallback(
         (content: string) => {
