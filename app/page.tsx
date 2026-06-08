@@ -1,4 +1,4 @@
-import Header from "@/components/landing/Header";
+import Header from "@/components/landing/header/Header";
 import Hero from "@/components/landing/Hero";
 import HowItWorks from "@/components/landing/HowItWorks";
 import Footer from "@/components/landing/Footer";

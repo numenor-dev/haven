@@ -14,6 +14,8 @@ import {
   FieldLabel,
 } from "@/components/ui/field"
 import { Input } from "@/components/ui/input"
+import Link from "next/link"
+import { ArrowLongLeftIcon } from "@heroicons/react/24/solid"
 
 
 export function LoginForm({
@@ -84,6 +86,18 @@ export function LoginForm({
           </form>
         </CardContent>
       </Card>
+
+      <div>
+        <Link
+          href="/"
+          className="flex items-center"
+        >
+          <div className="flex text-base space-x-1 mx-auto text-zinc-700 font-semibold tracking-tight">
+            <ArrowLongLeftIcon className="size-5 mt-0.5" />
+            <p>Go Back</p>
+          </div>
+        </Link>
+      </div>
     </div>
   )
 }

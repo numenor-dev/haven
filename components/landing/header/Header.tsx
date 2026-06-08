@@ -1,17 +1,23 @@
 'use client';
 
 import { motion, useScroll, useTransform } from "motion/react";
-import { ThemeToggle } from "../ui/themetoggle";
+import { ThemeToggle } from "@/components/ui/themetoggle";
 import Link from "next/link";
 
 const links = [
     { label: "Features", href: "#features" },
-    { label: "How It Works", href: "#how-it-works" },
-    { label: "Pricing", href: "#pricing" },
+    { label: "Scope", href: "#how-it-works" }
 ];
 
 export default function Header() {
     const { scrollY } = useScroll();
+
+    const scrollToTop = () => {
+        window.scrollTo({
+            top: 0,
+            behavior: "smooth",
+        });
+    };
 
     // Subtle border appears on scroll so the header separates from page content
     const borderOpacity = useTransform(scrollY, [0, 60], [0, 1]);
@@ -34,7 +40,11 @@ export default function Header() {
             />
 
             <div className="relative max-w-6xl mx-auto px-6 h-16 flex items-center">
-                <Link href="/" className="flex items-center">
+                <Link
+                href="/"
+                className="flex items-center"
+                onClick={scrollToTop}
+                >
                     <span className="text-lg font-semibold tracking-tight">
                         Haven
                     </span>
