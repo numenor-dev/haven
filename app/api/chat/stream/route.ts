@@ -1,15 +1,19 @@
 import Anthropic from "@anthropic-ai/sdk";
 import { NextRequest } from "next/server";
-import { Message } from "@/types/types";
+import {
+    getSession,
+    incrementTurn,
+    maxTrialTurns
+} from "@/lib/api/chatSession";
 
 const anthropic = new Anthropic({
     apiKey: process.env.ANTHROPIC_API_KEY,
 });
 
 const demoPrompt = `
-You are a warm, professional intake assistant for a personal injury law firm in Washington State.
+You are a warm, professional intake assistant for a law firm in Washington State.
 Your job is to gather the key facts an attorney needs before a first consultation. Never provide
-legal advice. Be conversational and empathetic; many clients are stressed or in pain.
+legal advice. Be conversational and empathetic since many clients are stressed or in pain.
 
 JURISDICTION CONTEXT — WASHINGTON STATE:
 - Statute of limitations: 3 years from the date of injury (RCW 4.16.080). If the incident
@@ -46,35 +50,48 @@ const livePrompt = demoPrompt;
 const demoModel = "claude-haiku-4-5-20251001";  // cost-optimized for demo
 const liveModel = "claude-sonnet-4-6";   // quality for live sessions
 
-
-
 export async function POST(req: NextRequest) {
+    const { sessionId, messages, firm, isDemo } = await req.json();
+
+    const session = await getSession(sessionId);
+    if (!session) {
+        return new Response('Session not found', { status: 404 });
+    }
+    if (session.status === 'complete') {
+        return new Response('Session already complete', { status: 400 });
+    }
+    if (session.isTrial && session.turnCount >= maxTrialTurns) {
+        return new Response('Trial session limit reached', { status: 429 });
+    }
+    if (!isDemo && !firm) {
+        return new Response(
+            JSON.stringify({ error: "firm is required for live sessions" }),
+            { status: 400, headers: { "Content-Type": "application/json" } }
+        );
+    }
     try {
-        const body = await req.json();
-        const { messages, firm, isDemo } = body as {
-            messages: Message[];
-            firm?: string;
-            isDemo?: boolean;
-        };
-
-        if (!isDemo && !firm) {
-            return new Response(
-                JSON.stringify({ error: "firm is required for live sessions"}),
-                { status: 400, headers: { "Content-Type": "application/json" } }
-            );
-        }
-
         const systemPrompt = isDemo ? demoPrompt : livePrompt;
-        
+
         const model = isDemo ? demoModel : liveModel;
 
         const stream = await anthropic.messages.stream({
             model,
             max_tokens: 2048,
-            system: systemPrompt,
+            system: [
+                {
+                    type: "text",
+                    text: systemPrompt,
+                    cache_control: { type: "ephemeral" }
+                }
+            ],
             messages: messages.length === 0
-            ? [{ role: "user", content: "Begin the chat session." }]
-            : messages,
+                ? [{ role: "user", content: "Begin the chat session." }]
+                : messages,
+        });
+
+        stream.on('message', (message) => {
+            incrementTurn(session.id);
+            console.log('[Anthropic usage]', message.usage);
         });
 
         // Pipe the Anthropic stream back to the client as SSE
@@ -105,9 +122,7 @@ export async function POST(req: NextRequest) {
             headers: {
                 "Content-Type": "text/event-stream",
                 "Cache-Control": "no-cache, no-transform",
-                "Connection": "keep-alive",
-                // Firm context passed through for future use (logging, branding, RAG scope)
-                ...(firm && { "X-Haven-Firm": firm }),
+                "Connection": "keep-alive"
             },
         });
     } catch (error) {

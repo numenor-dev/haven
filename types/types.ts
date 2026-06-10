@@ -1,4 +1,4 @@
-export type SessionStatus = "idle" | "streaming" | "user_turn" | "complete" | "error"
+export type SessionStatus = "idle" | "active" | "streaming" | "user_turn" | "complete" | "expired" | "error"
 
 export type Message = {
     role: "user" | "assistant"
@@ -11,6 +11,14 @@ export type LiveSessionProps = {
 
 export type DemoSessionProps = {
     isActive: boolean;
+}
+
+export type IntakeSession = {
+  id: string;
+  firmSlug: string;
+  status: SessionStatus;
+  turnCount: number;
+  isTrial: boolean;
 }
 
 export type LiveSessionReturn = {

@@ -67,7 +67,7 @@ export default function useDemoSession({ isActive }: DemoSessionProps): DemoSess
         return () => {
             cancelStream();
         }
-    }, []);
+    }, [cancelStream]);
 
     const sendMessage = useCallback(
         (content: string) => {
