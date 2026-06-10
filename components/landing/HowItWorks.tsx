@@ -27,7 +27,7 @@ export default function HowItWorks() {
         <div className="space-y-28">
             <div
                 ref={chatRef}
-                className="flex flex-col max-w-lg px-7 sm:max-w-2xl md:max-w-3xl lg:max-w-4xl mx-auto">
+                className="flex flex-col max-w-lg px-7 sm:max-w-2xl md:max-w-3xl mx-auto">
                 <DemoChat isActive={demoStarted} />
             </div>
             <Explainer />

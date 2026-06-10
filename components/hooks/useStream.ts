@@ -33,7 +33,7 @@ export function useStream({ onChunk, onComplete, onError }: UseStreamProps): Use
             let reader;
 
             try {
-                const response = await fetch("/api/intake/stream", {
+                const response = await fetch("/api/chat/stream", {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify({

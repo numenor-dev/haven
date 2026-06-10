@@ -3,15 +3,11 @@ import { NextRequest } from "next/server";
 import {
     getSession,
     incrementTurn,
-    maxTrialTurns
-} from "@/lib/api/chatSession";
-
-const anthropic = new Anthropic({
-    apiKey: process.env.ANTHROPIC_API_KEY,
-});
+    isTrialExhausted,
+} from "@/lib/api/sessionStates";
 
 const demoPrompt = `
-You are a warm, professional intake assistant for a law firm in Washington State.
+You are a warm, professional intake assistant for a personal injury law firm in Washington State.
 Your job is to gather the key facts an attorney needs before a first consultation. Never provide
 legal advice. Be conversational and empathetic since many clients are stressed or in pain.
 
@@ -45,99 +41,131 @@ their information before the consultation, and end the session by saying exactly
 Do not ask any further questions after this closing message.
 `.trim();
 
-// TODO: Replace with full RAG-backed system prompt when private backend is ready
+const anthropic = new Anthropic({
+    apiKey: process.env.ANTHROPIC_API_KEY,
+});
+
+// Live prompt will be much more refined when DB is spun up
 const livePrompt = demoPrompt;
-const demoModel = "claude-haiku-4-5-20251001";  // cost-optimized for demo
+const demoModel = "claude-haiku-4-5-20251001";  // lower cost for demo
 const liveModel = "claude-sonnet-4-6";   // quality for live sessions
 
+const sseHeaders = {
+    'Content-Type': 'text/event-stream',
+    'Cache-Control': 'no-cache, no-transform',
+    'Connection': 'keep-alive',
+    'X-Accel-Buffering': 'no',
+};
+
+function jsonError(message: string, status: number): Response {
+    return new Response(JSON.stringify({ error: message }), {
+        status,
+        headers: { 'Content-Type': 'application/json' },
+    });
+};
+
+function buildStream(
+    stream: ReturnType<typeof anthropic.messages.stream>
+): ReadableStream {
+    return new ReadableStream({
+        async start(controller) {
+            const encoder = new TextEncoder();
+            try {
+                for await (const chunk of stream) {
+                    controller.enqueue(encoder.encode(`data: ${JSON.stringify(chunk)}\n\n`));
+                    if (chunk.type === 'message_stop') break;
+                }
+            } catch (streamError) {
+                console.error('[stream route] Stream error:', streamError);
+                controller.enqueue(
+                    encoder.encode(
+                        `data: ${JSON.stringify({ type: 'error', error: 'Stream interrupted' })}\n\n`
+                    )
+                );
+            } finally {
+                controller.close();
+            }
+        },
+    });
+}
+
 export async function POST(req: NextRequest) {
-    const { sessionId, messages, firm, isDemo } = await req.json();
+    const body = await req.json().catch(() => null);
+    const { sessionId, messages, firm, isDemo } = body ?? {};
+
+    if (isDemo) {
+        if (!Array.isArray(messages)) {
+            return jsonError('messages must be an array', 400);
+        }
+
+        try {
+            const stream = anthropic.messages.stream({
+                model: demoModel,
+                max_tokens: 2048,
+                system: [{ type: 'text', text: demoPrompt, cache_control: { type: 'ephemeral' } }],
+                messages: messages.length === 0
+                    ? [{ role: 'user', content: 'Beging the chat session.' }]
+                    : messages,
+            });
+
+            stream.on('message', (message) => {
+                console.log('[Anthropic usage] demo:', message.usage);
+            });
+
+            return new Response(buildStream(stream), { headers: sseHeaders });
+        } catch (error) {
+            console.error('[stream route] Live request error:', error);
+            if (error instanceof Anthropic.APIError) {
+                return jsonError(error.message, error.status);
+            }
+            return jsonError('Internal server error', 500);
+        }
+    }
+
+    if (!sessionId || typeof sessionId !== 'string') {
+        return jsonError('sessionId is required', 400);
+    }
+    if (!Array.isArray(messages)) {
+        return jsonError('messages must be an array', 400);
+    }
+    if (!firm || typeof firm !== 'string') {
+        return jsonError('firm is required for live sessions', 400);
+    }
 
     const session = await getSession(sessionId);
     if (!session) {
-        return new Response('Session not found', { status: 404 });
+        return jsonError('Session not found', 404);
     }
     if (session.status === 'complete') {
-        return new Response('Session already complete', { status: 400 });
+        return jsonError('Session already complete', 409);
     }
-    if (session.isTrial && session.turnCount >= maxTrialTurns) {
-        return new Response('Trial session limit reached', { status: 429 });
+    if (isTrialExhausted(session)) {
+        return jsonError('Trial session limit reached', 429);
     }
-    if (!isDemo && !firm) {
-        return new Response(
-            JSON.stringify({ error: "firm is required for live sessions" }),
-            { status: 400, headers: { "Content-Type": "application/json" } }
-        );
-    }
+
     try {
-        const systemPrompt = isDemo ? demoPrompt : livePrompt;
-
-        const model = isDemo ? demoModel : liveModel;
-
-        const stream = await anthropic.messages.stream({
-            model,
+        const stream = anthropic.messages.stream({
+            model: liveModel,
             max_tokens: 2048,
-            system: [
-                {
-                    type: "text",
-                    text: systemPrompt,
-                    cache_control: { type: "ephemeral" }
-                }
-            ],
+            system: [{ type: 'text', text: livePrompt, cache_control: { type: 'ephemeral' } }],
             messages: messages.length === 0
-                ? [{ role: "user", content: "Begin the chat session." }]
+                ? [{ role: 'user', content: 'Begin the chat session.' }]
                 : messages,
         });
 
         stream.on('message', (message) => {
-            incrementTurn(session.id);
-            console.log('[Anthropic usage]', message.usage);
-        });
-
-        // Pipe the Anthropic stream back to the client as SSE
-        const readable = new ReadableStream({
-            async start(controller) {
-                const encoder = new TextEncoder();
-
-                try {
-                    for await (const chunk of stream) {
-                        const line = `data: ${JSON.stringify(chunk)}\n\n`;
-                        controller.enqueue(encoder.encode(line));
-
-                        if (chunk.type === "message_stop") {
-                            break;
-                        }
-                    }
-                } catch (streamError) {
-                    console.error("[stream route] Stream error:", streamError);
-                    const errorEvent = `data: ${JSON.stringify({ type: "error", error: "Stream interrupted" })}\n\n`;
-                    controller.enqueue(encoder.encode(errorEvent));
-                } finally {
-                    controller.close();
-                }
-            },
-        });
-
-        return new Response(readable, {
-            headers: {
-                "Content-Type": "text/event-stream",
-                "Cache-Control": "no-cache, no-transform",
-                "Connection": "keep-alive"
-            },
-        });
-    } catch (error) {
-        console.error("[stream route] Request error:", error);
-
-        if (error instanceof Anthropic.APIError) {
-            return new Response(
-                JSON.stringify({ error: error.message }),
-                { status: error.status, headers: { "Content-Type": "application/json" } }
+            incrementTurn(session.id).catch((err) =>
+                console.error('[stream route] incrementTurn failed:', err)
             );
-        }
+            console.log('[Anthropic usage] live:', message.usage);
+        });
 
-        return new Response(
-            JSON.stringify({ error: "Internal server error" }),
-            { status: 500, headers: { "Content-Type": "application/json" } }
-        );
+        return new Response(buildStream(stream), { headers: sseHeaders });
+    } catch (error) {
+        console.error('[stream route] Live request error:', error);
+        if (error instanceof Anthropic.APIError) {
+            return jsonError(error.message, error.status);
+        }
+        return jsonError('Internal server error', 500);
     }
 }

@@ -3,7 +3,8 @@ import {
     createSession,
     getSession,
     completeSession
-} from '@/lib/api/chatSession';
+} from '@/lib/api/sessionStates';
+
 
 export async function POST(req: NextRequest) {
     const body = await req.json().catch(() => null);
@@ -29,7 +30,7 @@ export async function POST(req: NextRequest) {
 export async function GET(req: NextRequest) {
     const sessionId = req.nextUrl.searchParams.get('sessionId');
 
-    if (!sessionId) {
+    if (!sessionId || typeof sessionId !== 'string') {
         return NextResponse.json({ error: 'sessionId is required' }, { status: 400 });
     }
 
@@ -45,14 +46,18 @@ export async function PATCH(req: NextRequest) {
     const body = await req.json().catch(() => null);
     const sessionId = body?.sessionId;
 
-    if (!sessionId) {
+    if (!sessionId || typeof sessionId !== 'string') {
         return NextResponse.json({ error: 'sessionId is required' }, { status: 400 });
     }
 
-    const session = await completeSession(sessionId);
-    if (!session) {
+    const currentSession = await getSession(sessionId);
+    if (!currentSession) {
         return NextResponse.json({ error: 'Session not found' }, { status: 404 });
     }
+    if (currentSession.status === 'complete') {
+        return NextResponse.json({ error: 'Session already complete' }, { status: 409 });
+    }
 
+    const session = await completeSession(sessionId);
     return NextResponse.json(session);
 }

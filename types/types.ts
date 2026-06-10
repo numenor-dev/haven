@@ -19,6 +19,8 @@ export type IntakeSession = {
   status: SessionStatus;
   turnCount: number;
   isTrial: boolean;
+  createdAt: string;
+  completedAt?: string;
 }
 
 export type LiveSessionReturn = {

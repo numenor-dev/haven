@@ -1,5 +1,4 @@
 
-
 export default function Hero() {
     return (
         <div className="flex flex-col items-center space-y-3 xl:space-y-5 mt-48 mb-20">

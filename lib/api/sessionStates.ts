@@ -12,10 +12,16 @@ export async function createSession(firmSlug: string): Promise<IntakeSession> {
     firmSlug,
     status: 'active',
     turnCount: 0,
-    isTrial: firmSlug === trialSlug
+    isTrial: firmSlug === trialSlug,
+    createdAt: new Date().toISOString(),
+    completedAt: new Date().toDateString()
   };
   store.set(session.id, session);
   return session;
+}
+
+export function isTrialExhausted(session: IntakeSession): boolean {
+  return session.isTrial && session.turnCount >= maxTrialTurns;
 }
 
 export async function getSession(id: string): Promise<IntakeSession | null> {
@@ -24,14 +30,17 @@ export async function getSession(id: string): Promise<IntakeSession | null> {
 
 export async function incrementTurn(id: string): Promise<IntakeSession | null> {
   const session = store.get(id);
-  if (!session) return null;
-  session.turnCount += 1;
-  return session;
+  if (!session) throw new Error(`Session not found: ${id}`);
+  if (isTrialExhausted(session)) return null;
+  const updated = { ...session, turnCount: session.turnCount + 1 };
+  store.set(id, updated);
+  return updated;
 }
 
 export async function completeSession(id: string): Promise<IntakeSession | null> {
   const session = store.get(id);
-  if (!session) return null;
-  session.status = 'complete';
-  return session;
+  if (!session) throw new Error(`Session not found: ${id}`);
+  const updated = { ...session, status: 'complete' as const };
+  store.set(id, updated);
+  return updated;
 }
