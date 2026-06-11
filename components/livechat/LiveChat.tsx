@@ -18,14 +18,6 @@ export default function LiveChat({ firm }: LiveSessionProps) {
     const messagesEndRef = useRef<HTMLDivElement>(null);
     const inputRef = useRef<HTMLTextAreaElement>(null);
 
-    useEffect(() => {
-        messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-    }, [messages]);
-
-    useEffect(() => {
-        if (status === "user_turn") inputRef.current?.focus();
-    }, [status]);
-
     const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
         if (e.key === "Enter" && !e.shiftKey) {
             e.preventDefault();
@@ -46,10 +38,7 @@ export default function LiveChat({ firm }: LiveSessionProps) {
     };
 
     return (
-        <div className="flex min-h-screen intake-bg">
-            <span className="flex mx-auto mt-20 text-zinc-900">
-                {firmName && <span>Welcome to {firmName}!</span>}
-            </span>
+        <div>
             <div className="flex flex-col w-full max-w-2xl mx-auto h-150 rounded-2xl border border-zinc-50 dark:border-zinc-50/50 overflow-hidden shadow-2xl">
 
                 {/* Header */}

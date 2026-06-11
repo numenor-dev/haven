@@ -5,7 +5,7 @@ import { motion, AnimatePresence } from "motion/react";
 import { DemoSessionProps } from "@/types/types";
 import useDemoSession from "./hooks/useDemoSession";
 import StreamingIndicator from "../ui/loading";
-import { ArrowUpIcon } from "@heroicons/react/24/solid";
+import { ArrowUpIcon, StopIcon } from "@heroicons/react/24/solid";
 
 
 export default function DemoChat({ isActive }: DemoSessionProps) {
@@ -67,8 +67,8 @@ export default function DemoChat({ isActive }: DemoSessionProps) {
 
                             <div
                                 className={`max-w-[80%] rounded-2xl px-4 py-2.5 text-sm leading-relaxed ${message.role === "user"
-                                        ? "bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900 rounded-br-sm"
-                                        : "bg-zinc-50 dark:bg-sky-800 text-zinc-900 dark:text-zinc-100 rounded-bl-sm"
+                                    ? "bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900 rounded-br-sm"
+                                    : "bg-zinc-50 dark:bg-sky-800 text-zinc-900 dark:text-zinc-100 rounded-bl-sm"
                                     }`}
                             >
                                 {/* Show streaming indicator on empty assistant message */}
@@ -82,7 +82,6 @@ export default function DemoChat({ isActive }: DemoSessionProps) {
                     ))}
                 </AnimatePresence>
 
-                {/* Error state */}
                 {error && (
                     <motion.p
                         initial={{ opacity: 0 }}
@@ -93,7 +92,6 @@ export default function DemoChat({ isActive }: DemoSessionProps) {
                     </motion.p>
                 )}
 
-                {/* Session complete */}
                 {status === "complete" && (
                     <motion.p
                         initial={{ opacity: 0 }}
@@ -114,25 +112,34 @@ export default function DemoChat({ isActive }: DemoSessionProps) {
                         ref={inputRef}
                         rows={1}
                         placeholder={
-                            status === "user_turn"
-                                ? "Reply..."
-                                : status === "complete"
-                                    ? "Session complete"
-                                    : "Haven is typing..."
+                            status === "user_turn" ? "Reply..."
+                                : status === "complete" ? "Session complete"
+                                    : status === "error" ? "Something went wrong"
+                                        : "Haven is typing..."
                         }
                         disabled={status !== "user_turn"}
                         onKeyDown={handleKeyDown}
                         className="flex-1 bg-transparent resize-none text-sm text-zinc-800 dark:text-zinc-100 placeholder:text-zinc-700 dark:placeholder:text-zinc-300 outline-none disabled:cursor-not-allowed min-h-6 max-h-32 leading-6"
-                        
+
                     />
-                    <button
-                        onClick={handleSend}
-                        disabled={status !== "user_turn"}
-                        aria-label="Send message"
-                        className="shrink-0 w-7 h-7 rounded-lg flex items-center justify-center bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900 disabled:opacity-30 disabled:cursor-not-allowed hover:opacity-80 transition-opacity duration-200"
-                    >
-                        <ArrowUpIcon className="size-4"/>
-                    </button>
+                    {status === "streaming" ? (
+                        <button
+                            onClick={cancel}
+                            aria-label="Stop response"
+                            className="shrink-0 w-7 h-7 rounded-lg flex items-center justify-center bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900 hover:opacity-80 transition-opacity duration-200"
+                        >
+                            <StopIcon className="size-4" />
+                        </button>
+                    ) : (
+                        <button
+                            onClick={handleSend}
+                            disabled={status !== "user_turn"}
+                            aria-label="Send message"
+                            className="shrink-0 w-7 h-7 rounded-lg flex items-center justify-center bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900 disabled:opacity-30 disabled:cursor-not-allowed hover:opacity-80 transition-opacity duration-200"
+                        >
+                            <ArrowUpIcon className="size-4" />
+                        </button>
+                    )}
                 </div>
                 <p className="text-[11px] text-center text-zinc-300 dark:text-zinc-400 mt-2">
                     This is a demo. No data is stored.
