@@ -28,7 +28,6 @@ export type LiveSessionReturn = {
     messages: Message[];
     error: Error | null;
     sessionId: string | null;
-    start: () => void;
     sendMessage: (content: string) => void;
     cancel: () => void;
 }

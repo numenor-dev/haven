@@ -1,4 +1,4 @@
-"use client";
+'use client';
 
 import { useRef } from "react";
 import { motion, AnimatePresence } from "motion/react";
@@ -9,7 +9,7 @@ import { ArrowUpIcon } from "@heroicons/react/24/solid";
 
 
 export default function DemoChat({ isActive }: DemoSessionProps) {
-    const { status, messages, sendMessage, error } = useDemoSession({ isActive });
+    const { status, messages, sendMessage, cancel, error, reset } = useDemoSession({ isActive });
 
     const messagesEndRef = useRef<HTMLDivElement>(null);
     const inputRef = useRef<HTMLTextAreaElement>(null);
@@ -37,7 +37,7 @@ export default function DemoChat({ isActive }: DemoSessionProps) {
         <div className="flex flex-col w-full max-w-2xl mx-auto h-150 rounded-2xl border border-zinc-50 dark:border-zinc-50/50 overflow-hidden shadow-2xl">
 
             {/* Header */}
-            <div className="flex items-center gap-3 px-5 py-3 bg-sky-800/60 dark:bg-sky-900/40">
+            <div className="flex items-center space-x-3 px-5 py-5 border-b border-zinc-200/30 dark:border-zinc-200/10">
                 <div className="w-2 h-2 rounded-full bg-emerald-300" />
                 <span className="text-sm font-bold">
                     Select Law Group
@@ -48,7 +48,7 @@ export default function DemoChat({ isActive }: DemoSessionProps) {
             </div>
 
             {/* Message thread */}
-            <div className="flex-1 overflow-y-auto px-5 py-4 space-y-4 scroll-smooth">
+            <div className="flex-1 overflow-y-auto px-5 py-7 space-y-4 scroll-smooth">
                 <AnimatePresence initial={false}>
                     {messages.map((message, i) => (
                         <motion.div

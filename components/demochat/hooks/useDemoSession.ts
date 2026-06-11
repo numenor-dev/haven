@@ -41,9 +41,8 @@ export default function useDemoSession({ isActive }: DemoSessionProps): DemoSess
     });
 
     const cancel = useCallback(() => {
-        if (status !== "streaming") return;
         cancelStream();
-        setStatus("user_turn");
+        if (status === "streaming") setStatus("user_turn")
     }, [status, cancelStream]);
 
     const start = useCallback(() => {

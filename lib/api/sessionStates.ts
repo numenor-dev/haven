@@ -40,7 +40,8 @@ export async function incrementTurn(id: string): Promise<IntakeSession | null> {
 export async function completeSession(id: string): Promise<IntakeSession | null> {
   const session = store.get(id);
   if (!session) throw new Error(`Session not found: ${id}`);
-  const updated = { ...session, status: 'complete' as const };
+  if (session.status === 'complete') return session;
+  const updated = { ...session, status: 'complete' as const, completedAt: new Date().toISOString() };
   store.set(id, updated);
   return updated;
 }

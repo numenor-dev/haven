@@ -15,5 +15,11 @@ export default async function CustomPage({
 
     if (!testSlugs.includes(slug)) notFound()
 
-    return <LiveChat firm={slug} />
+    return (
+        <div className="w-full">
+            <div className="flex flex-col max-w-lg px-7 sm:max-w-2xl md:max-w-3xl mx-auto">
+                <LiveChat firm={slug} />
+            </div>
+        </div>
+    )
 }
