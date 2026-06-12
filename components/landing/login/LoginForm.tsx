@@ -1,4 +1,8 @@
+'use client';
+
 import { cn } from "@/lib/utils"
+import { useSearchParams } from "next/navigation"
+import { useState } from "react";
 import { Button } from "@/components/ui/button"
 import {
   Card,
@@ -9,7 +13,6 @@ import {
 } from "@/components/ui/card"
 import {
   Field,
-  FieldDescription,
   FieldGroup,
   FieldLabel,
 } from "@/components/ui/field"
@@ -22,6 +25,12 @@ export function LoginForm({
   className,
   ...props
 }: React.ComponentProps<"div">) {
+
+  const searchParams = useSearchParams();
+  const email = searchParams.get('email');
+
+  const [emailValue, setEmailValue] = useState(email ?? '');
+
   return (
     <div className={cn("flex flex-col", className)} {...props}>
       <Card>
@@ -35,20 +44,22 @@ export function LoginForm({
           <form>
             <FieldGroup className="gap-8">
               <Field className="gap-1">
-                <FieldLabel htmlFor="email" className="text-sm">
+                <FieldLabel htmlFor="email" className="text-base">
                   Email
                 </FieldLabel>
                 <Input
+                  value={emailValue}
+                  onChange={(e) => setEmailValue(e.target.value)}
                   id="email"
                   type="email"
                   placeholder="haven@example.com"
-                  className="h-9"
+                  className="h-10"
                   required
                 />
               </Field>
               <Field className="gap-1">
                 <div className="flex items-center">
-                  <FieldLabel htmlFor="password" className="text-sm">
+                  <FieldLabel htmlFor="password" className="text-base">
                     Password
                   </FieldLabel>
                   <a
@@ -65,23 +76,23 @@ export function LoginForm({
                   required
                 />
               </Field>
-              <Field>
+              <div className="flex flex-col gap-3">
                 <Button
                   type="submit"
-                  className="text-base h-9">
+                  className="w-full h-9 text-base hover:bg-sky-600 cursor-pointer"
+                >
                   Login
                 </Button>
                 <Button
-                  variant="outline"
                   type="button"
-                  className="text-base h-9"
+                  className="w-full h-9 text-base text-zinc-700 bg-slate-300 hover:bg-slate-300/70 cursor-pointer"
                 >
                   Login with Google
                 </Button>
-                <FieldDescription className="text-center">
-                  Don&apos;t have an account? <a href="#">Sign up</a>
-                </FieldDescription>
-              </Field>
+                <p className="text-sm text-center text-muted-foreground">
+                  Don&apos;t have an account? <a href="/signup">Sign up</a>
+                </p>
+              </div>
             </FieldGroup>
           </form>
         </CardContent>
