@@ -26,7 +26,7 @@ export default async function ClientPage({
         <main className="marketing-bg min-h-screen">
             <Header />
             <div className="flex mx-auto justify-center pt-36 mb-24">
-                <h1 className="text-3xl md:text-4xl font-bold tracking-tighter">
+                <h1 className="text-2xl md:text-4xl font-bold tracking-tighter">
                     Welcome to {firmName}
                 </h1>
             </div>

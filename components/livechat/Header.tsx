@@ -2,8 +2,16 @@ import { ThemeToggle } from "@/components/ui/themetoggle";
 import Link from "next/link";
 
 const links = [
-    { label: "Law 101", href: "#law" },
-    { label: "Interesting Stuff", href: "#how-it-works" }
+    {
+        label: "Select Law Group",
+        href: "https://www.selectlawgroup.com/",
+        aria: "Select Law Group"
+    },
+    {
+        label: "Personal Injury 101",
+        href: "https://www.nolo.com/legal-encyclopedia/what-is-the-personal-injury-statute-of-limitations-in-washington.html",
+        aria: "Personal Injury Statute of Limitations in Washington State"
+    }
 ];
 
 
@@ -16,11 +24,6 @@ export default function Header() {
 
             {/* Nav links */}
             <div className="relative max-w-6xl mx-auto px-6 h-16 flex items-center">
-                <p className="flex items-center">
-                    <span className="text-lg font-semibold tracking-tight">
-                        Haven
-                    </span>
-                </p>
                 <nav className="hidden md:flex items-center gap-1 absolute left-1/2 -translate-x-1/2">
                     {links.map((link) => (
                         <div
@@ -29,6 +32,9 @@ export default function Header() {
                             <Link
                                 href={link.href}
                                 className="text-base text-foreground px-3 py-1.5 rounded-lg hover:bg-foreground/20 hover:dark:bg-sky-900 transition-all duration-200"
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                aria-label={link.aria}
                             >
                                 {link.label}
                             </Link>
