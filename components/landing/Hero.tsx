@@ -1,13 +1,16 @@
 'use client';
 
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { toast } from "sonner";
+import { Button } from "../ui/button";
 
 const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
-
+const toastConfig = {
+    duration: 3000,
+    richColors: true
+} as const;
 
 export default function Hero() {
-    const [error, setError] = useState('');
 
     const router = useRouter();
 
@@ -16,10 +19,19 @@ export default function Hero() {
 
         const formData = new FormData(event.currentTarget);
         const emailValue = formData.get('email') as string;
-        const isValid = emailRegex.test(emailValue);
 
-        if (!isValid) {
-            setError('Please enter a valid email');
+        if (emailValue && !emailValue.includes('@')) {
+            toast.error("Please include an '@' in the email address", toastConfig);
+            return;
+        }
+
+        if (!emailValue.trim()) {
+            toast.error("Please enter your email address", toastConfig);
+            return;
+        }
+
+        if (!emailRegex.test(emailValue)) {
+            toast.error("Please enter a valid email address", toastConfig);
             return;
         }
 
@@ -37,10 +49,12 @@ export default function Hero() {
             <p className="text-white dark:text-zinc-200 text-xl max-w-sm md:max-w-lg text-center">
                 Safe and efficient client intake that helps legal teams hit the ground running with potential clients
             </p>
-            <form onSubmit={handleSubmit} className="mt-10 flex flex-col items-center gap-y-2">
+            <form
+                noValidate
+                onSubmit={handleSubmit}
+                className="mt-10 flex flex-col items-center gap-y-2">
                 <div className="flex items-center space-x-3">
                     <input
-                        onChange={() => setError('')}
                         name="email"
                         id="email"
                         type="email"
@@ -48,18 +62,16 @@ export default function Hero() {
                         aria-label="Please enter your email address"
                         className="ring-1 ring-zinc-100 focus:ring-white rounded-2xl h-10 w-64 md:w-96 text-center"
                     />
-                    <button
+                    <Button
                         type="submit"
                         className="
-                        font-medium bg-sky-700 dark:bg-sky-800 text-zinc-50 py-2 px-4 rounded-2xl
+                        bg-sky-700 md:text-base dark:bg-sky-800 text-zinc-50 py-5 px-4 md:p-5 rounded-2xl
                         hover:bg-sky-600 hover:dark:bg-sky-700 transition-all duration-300 cursor-pointer"
                     >
                         Get Started
-                    </button>
+                    </Button>
                 </div>
-                {error && <p className="text-red-400 text-base mt-2 ml-24">{error}</p>}
             </form>
-
         </div>
     )
 }

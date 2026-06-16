@@ -3,6 +3,8 @@ import { ThemeProvider } from "next-themes";
 import { Inter } from "next/font/google";
 import "./globals.css";
 import { cn } from "@/lib/utils";
+import { Toaster } from "@/components/ui/sonner";
+
 
 const inter = Inter({
   subsets: ['latin'],
@@ -27,8 +29,17 @@ export default function RootLayout({
     >
       <body className="min-h-full font-inter flex flex-col">
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
-        {children}
+          {children}
         </ThemeProvider>
+        <Toaster
+          position="top-center"
+          toastOptions={{
+            classNames: {
+              toast: "!w-[350px] md:!w-[400px]",
+              title: "md:text-base font-medium"
+            }
+          }}
+        />
       </body>
     </html>
   );

@@ -119,7 +119,10 @@ export default function DemoChat({ isActive }: DemoSessionProps) {
                         }
                         disabled={status !== "user_turn"}
                         onKeyDown={handleKeyDown}
-                        className="flex-1 bg-transparent resize-none text-sm text-zinc-800 dark:text-zinc-100 placeholder:text-zinc-700 dark:placeholder:text-zinc-300 outline-none disabled:cursor-not-allowed min-h-6 max-h-32 leading-6"
+                        className="
+                        flex-1 bg-transparent resize-none text-sm text-zinc-800 dark:text-zinc-100 
+                        placeholder:text-zinc-700 dark:placeholder:text-zinc-300 outline-none disabled:cursor-not-allowed 
+                        min-h-6 max-h-40 leading-6 field-sizing-content"
 
                     />
                     {status === "streaming" ? (

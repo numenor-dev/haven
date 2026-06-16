@@ -37,8 +37,8 @@ export default function Explainer() {
                     initial={{ opacity: 0, y: 12 }}
                     animate={inView ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
                     transition={{ duration: 1.1, ease: "easeOut" }}>
-                    Haven intelligently captures potential client
-                    needs to save your time and theirs. Haven will
+                    Haven intelligently captures client
+                    needs to proactively save your time and theirs. Haven will
                     learn the practice area the client is reaching out for,
                     such as workplace injury, bicycle accidents, or pedestrian injury
                     and then asks contextually based questions for optimum clarity. Then,
