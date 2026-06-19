@@ -1,9 +1,11 @@
 'use client';
 
-import { cn } from "@/lib/utils"
-import { useSearchParams } from "next/navigation"
+import { cn } from "@/lib/utils";
+import { useSearchParams, useRouter } from "next/navigation";
 import { useState } from "react";
-import { Button } from "@/components/ui/button"
+import { Button } from "@/components/ui/button";
+import { toast } from "sonner";
+import { signInWithEmail } from "./actions";
 import {
   Card,
   CardContent,
@@ -21,18 +23,41 @@ import Link from "next/link"
 import { ArrowLongLeftIcon } from "@heroicons/react/24/solid"
 
 
-export function LoginForm({
+export default function LoginForm({
   className,
   ...props
 }: React.ComponentProps<"div">) {
 
-  const searchParams = useSearchParams();
-  const email = searchParams.get('email');
+  const searchparams = useSearchParams();
+  const email = searchparams.get('email');
 
   const [emailValue, setEmailValue] = useState(email ?? '');
+  const [loading, setLoading] = useState<boolean>(false);
+  const router = useRouter();
+
+  const handleSubmit = async (event: React.SubmitEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    setLoading(true);
+
+    const formData = new FormData(event.currentTarget);
+
+    const result = await signInWithEmail(formData, {
+      email: formData.get('email'),
+      password: formData.get('password'),
+      redirect: false
+    });
+
+    if (result?.error) {
+      toast.error('Invalid email or password');
+      setLoading(false);
+      return;
+    }
+
+    router.push('/dashboard');
+  };
 
   return (
-    <div className={cn("flex flex-col", className)} {...props}>
+    <div className={cn("flex flex-col max-w-2xl", className)} {...props}>
       <Card>
         <CardHeader>
           <CardTitle className="text-2xl mx-auto">Login to your account</CardTitle>
@@ -66,7 +91,7 @@ export function LoginForm({
                     href="#"
                     className="ml-auto inline-block text-sm underline-offset-4 hover:underline"
                   >
-                    Forgot your password?
+                    Forgot password?
                   </a>
                 </div>
                 <Input
@@ -90,7 +115,7 @@ export function LoginForm({
                   Login with Google
                 </Button>
                 <p className="text-sm text-center text-muted-foreground">
-                  Don&apos;t have an account? <a href="/signup">Sign up</a>
+                  Don&apos;t have an account? <a href="/sign-up">Sign up</a>
                 </p>
               </div>
             </FieldGroup>
