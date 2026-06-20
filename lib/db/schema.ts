@@ -1,5 +1,6 @@
 import {
   pgTable,
+  pgEnum,
   uuid,
   text,
   timestamp,
@@ -8,6 +9,8 @@ import {
   boolean,
   index
 } from 'drizzle-orm/pg-core';
+
+export const sessionStatusEnum = pgEnum('session_status', ['active', 'complete']);
 
 export const firms = pgTable('firms', {
   id: uuid('id').primaryKey().defaultRandom(),
@@ -33,13 +36,15 @@ export const attorneys = pgTable('attorneys', {
 export const chatSessions = pgTable('chat_sessions', {
   id: uuid('id').primaryKey().defaultRandom(),
   firmId: uuid('firm_id').notNull().references(() => firms.id),
-  status: text('status').notNull().default('active'), // 'active' | 'complete'
+  attorneyId: uuid('attorney_id').references(() => attorneys.id, { onDelete: 'set null' }),
+  status: sessionStatusEnum('status').notNull().default('active'),
   turnCount: integer('turn_count').notNull().default(0),
   createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
   updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow().$onUpdate(() => new Date()),
   completedAt: timestamp('completed_at', { withTimezone: true }),
 }, (table) => [
   index('chat_sessions_firm_id_idx').on(table.firmId),
+  index('chat_sessions_attorney_id_idx').on(table.attorneyId),
 ]);
 
 export const chatRecord = pgTable('chat_record', {

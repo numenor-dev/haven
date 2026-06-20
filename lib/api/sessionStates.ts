@@ -1,47 +1,71 @@
-import { randomUUID } from 'crypto';
-import { IntakeSession } from '@/types/types';
+import { db } from "../db/db";
+import { eq } from "drizzle-orm";
+import {
+  FirmNotFoundError,
+  AttorneyNotFoundError,
+  TrialExhaustedError,
+  SessionNotFoundError
+} from '@/lib/errors';
+import { chatSessions, attorneys } from "../db/schema";
+import { getFirmIdBySlug } from "../firm";
+import { ChatSession } from "@/types/types";
 
-export const trialSlug = 'trial';
-export const maxTrialTurns = 20;
+export async function createSession(firmSlug: string, attorneyId?: string): Promise<ChatSession> {
+  const firmId = await getFirmIdBySlug(firmSlug);
+  if (!firmId) throw new FirmNotFoundError(firmSlug);
 
-const store = new Map<string, IntakeSession>();
+  if (attorneyId) {
+    const [attorney] = await db
+      .select({ isTrialExhausted: attorneys.isTrialExhausted })
+      .from(attorneys)
+      .where(eq(attorneys.id, attorneyId));
+    if (!attorney) throw new AttorneyNotFoundError(attorneyId);
+    if (attorney.isTrialExhausted) throw new TrialExhaustedError();
+  }
 
-export async function createSession(firmSlug: string): Promise<IntakeSession> {
-  const session: IntakeSession = {
-    id: randomUUID(),
-    firmSlug,
-    status: 'active',
-    turnCount: 0,
-    isTrial: firmSlug === trialSlug,
-    createdAt: new Date().toISOString(),
-    completedAt: new Date().toDateString()
-  };
-  store.set(session.id, session);
+  const [session] = await db.insert(chatSessions).values({ firmId, attorneyId }).returning();
   return session;
 }
 
-export function isTrialExhausted(session: IntakeSession): boolean {
-  return session.isTrial && session.turnCount >= maxTrialTurns;
+export async function getSession(id: string): Promise<ChatSession | null> {
+  const [session] = await db.select().from(chatSessions).where(eq(chatSessions.id, id));
+  return session ?? null;
 }
 
-export async function getSession(id: string): Promise<IntakeSession | null> {
-  return store.get(id) ?? null;
-}
+export async function incrementTurn(id: string): Promise<ChatSession | null> {
+  const session = await getSession(id);
+  if (!session) throw new SessionNotFoundError(id);
 
-export async function incrementTurn(id: string): Promise<IntakeSession | null> {
-  const session = store.get(id);
-  if (!session) throw new Error(`Session not found: ${id}`);
-  if (isTrialExhausted(session)) return null;
-  const updated = { ...session, turnCount: session.turnCount + 1 };
-  store.set(id, updated);
+  const [updated] = await db
+    .update(chatSessions)
+    .set({ turnCount: session.turnCount + 1 })
+    .where(eq(chatSessions.id, id))
+    .returning();
   return updated;
 }
 
-export async function completeSession(id: string): Promise<IntakeSession | null> {
-  const session = store.get(id);
-  if (!session) throw new Error(`Session not found: ${id}`);
+export async function completeSession(id: string): Promise<ChatSession | null> {
+  const session = await getSession(id);
+  if (!session) throw new SessionNotFoundError(id);
   if (session.status === 'complete') return session;
-  const updated = { ...session, status: 'complete' as const, completedAt: new Date().toISOString() };
-  store.set(id, updated);
+
+  if (session.attorneyId) {
+    const [[updated]] = await db.batch([
+      db.update(chatSessions)
+        .set({ status: 'complete', completedAt: new Date() })
+        .where(eq(chatSessions.id, id))
+        .returning(),
+      db.update(attorneys)
+        .set({ isTrialExhausted: true })
+        .where(eq(attorneys.id, session.attorneyId)),
+    ]);
+    return updated;
+  }
+
+  const [updated] = await db
+    .update(chatSessions)
+    .set({ status: 'complete', completedAt: new Date() })
+    .where(eq(chatSessions.id, id))
+    .returning();
   return updated;
 }

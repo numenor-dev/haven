@@ -15,3 +15,8 @@ export async function isSlugAvailable(slug: string): Promise<boolean> {
   const existing = await db.query.firms.findFirst({ where: eq(firms.slug, slug) });
   return !existing;
 }
+
+export async function getFirmIdBySlug(slug: string): Promise<string | null> {
+  const [firm] = await db.select({ id: firms.id }).from(firms).where(eq(firms.slug, slug));
+  return firm?.id ?? null;
+}

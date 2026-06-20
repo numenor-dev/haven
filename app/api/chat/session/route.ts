@@ -1,10 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { eq } from 'drizzle-orm';
+import { auth } from '@/lib/auth/server';
+import { db } from '@/lib/db/db';
+import { FirmNotFoundError, TrialExhaustedError } from '@/lib/errors';
+import { attorneys, firms } from '@/lib/db/schema';
 import {
     createSession,
     getSession,
     completeSession
 } from '@/lib/api/sessionStates';
-
 
 export async function POST(req: NextRequest) {
     const body = await req.json().catch(() => null);
@@ -14,23 +18,39 @@ export async function POST(req: NextRequest) {
         return NextResponse.json({ error: 'firmSlug is required' }, { status: 400 });
     }
 
-    // TODO: validate firmSlug exists in DB once backend is live
-    // const firm = await getFirmBySlug(firmSlug);
-    // if (!firm) return NextResponse.json({ error: 'Firm not found' }, { status: 404 });
+    let attorneyId: string | undefined;
 
-    // TODO: check trial_used on user record once auth is wired in
-    // if (firmSlug === TRIAL_SLUG && session.user.trial_used) {
-    //   return NextResponse.json({ error: 'Trial already used' }, { status: 403 });
-    // }
+    const { data: authSession } = await auth.getSession();
+    if (authSession?.user) {
+        const [attorney] = await db
+            .select({ id: attorneys.id, firmSlug: firms.slug })
+            .from(attorneys)
+            .innerJoin(firms, eq(attorneys.firmId, firms.id))
+            .where(eq(attorneys.neonAuthUserId, authSession.user.id));
 
-    const session = await createSession(firmSlug);
-    return NextResponse.json(session, { status: 201 });
+        // Attorney visiting their own firm's URL counts as their one free trial
+        if (attorney && attorney.firmSlug === firmSlug) {
+            attorneyId = attorney.id;
+        }
+    }
+
+    try {
+        const session = await createSession(firmSlug, attorneyId);
+        return NextResponse.json(session, { status: 201 });
+    } catch (err) {
+        if (err instanceof TrialExhaustedError) {
+            return NextResponse.json({ error: err.message }, { status: 403 });
+        }
+        if (err instanceof FirmNotFoundError) {
+            return NextResponse.json({ error: err.message }, { status: 404 });
+        }
+        throw err;
+    }
 }
 
 export async function GET(req: NextRequest) {
     const sessionId = req.nextUrl.searchParams.get('sessionId');
-
-    if (!sessionId || typeof sessionId !== 'string') {
+    if (!sessionId) {
         return NextResponse.json({ error: 'sessionId is required' }, { status: 400 });
     }
 

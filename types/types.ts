@@ -1,3 +1,5 @@
+import { chatSessions } from "@/lib/db/schema"
+
 export type SessionStatus = "idle" | "active" | "streaming" | "user_turn" | "complete" | "expired" | "error"
 
 export type Message = {
@@ -13,15 +15,8 @@ export type DemoSessionProps = {
     isActive: boolean;
 }
 
-export type IntakeSession = {
-  id: string;
-  firmSlug: string;
-  status: SessionStatus;
-  turnCount: number;
-  isTrial: boolean;
-  createdAt: string;
-  completedAt?: string;
-}
+export type ChatSession = typeof chatSessions.$inferSelect;
+
 
 export type LiveSessionReturn = {
     status: SessionStatus;

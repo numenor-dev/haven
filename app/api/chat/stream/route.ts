@@ -95,7 +95,7 @@ export async function POST(req: NextRequest) {
 
     if (isDemo) {
         if (!Array.isArray(messages)) {
-            return jsonError('messages must be an array', 400);
+            return jsonError('Messages must be an array', 400);
         }
 
         try {
@@ -104,7 +104,7 @@ export async function POST(req: NextRequest) {
                 max_tokens: 2048,
                 system: [{ type: 'text', text: demoPrompt, cache_control: { type: 'ephemeral' } }],
                 messages: messages.length === 0
-                    ? [{ role: 'user', content: 'Beging the chat session.' }]
+                    ? [{ role: 'user', content: 'Begin the chat session.' }]
                     : messages,
             });
 
