@@ -1,10 +1,17 @@
 'use server';
 
 import { auth } from "@/lib/auth/server";
-import { db } from "@/lib/db";
+import { randomUUID } from "crypto";
+import { db } from "@/lib/db/db";
 import { firms, attorneys } from "@/lib/db/schema";
 import { slugify, isSlugAvailable } from "@/lib/firm";
 import { redirect } from "next/navigation";
+
+export async function checkSlugAvailability(firmName: string) {
+    const slug = slugify(firmName);
+    const available = await isSlugAvailable(slug);
+    return { slug, available };
+}
 
 export async function createFirm(
     _prevState: { error: string } | null,
@@ -21,18 +28,24 @@ export async function createFirm(
         return { error: `"${slug}" is already taken — try a more specific name.` };
     }
 
-    await db.transaction(async (tx) => {
-        const [firm] = await tx.insert(firms).values({
-            name: firmName,
-            slug,
-            notificationEmail: session.user.email,
-        }).returning();
+    const firmId = randomUUID();
 
-        await tx.insert(attorneys).values({
-            neonAuthUserId: session.user.id,
-            firmId: firm.id,
-        });
-    });
+    try {
+        await db.batch([
+            db.insert(firms).values({
+                id: firmId,
+                name: firmName,
+                slug,
+                notificationEmail: session.user.email,
+            }),
+            db.insert(attorneys).values({
+                neonAuthUserId: session.user.id,
+                firmId,
+            }),
+        ]);
+    } catch {
+        return { error: `"${slug}" was just taken — try a more specific name.` };
+    }
 
     redirect('/dashboard');
 }

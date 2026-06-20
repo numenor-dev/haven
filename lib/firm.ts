@@ -1,5 +1,5 @@
-import { db } from "@/lib/db";
-import { firms } from "@/lib/db/schema";
+import { db } from "./db/db";
+import { firms } from "./db/schema";
 import { eq } from "drizzle-orm";
 
 export function slugify(name: string): string {

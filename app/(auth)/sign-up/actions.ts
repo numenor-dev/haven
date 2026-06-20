@@ -1,14 +1,8 @@
 'use server';
 
 import { auth } from "@/lib/auth/server";
+import { authClient } from '@/lib/auth/client';
 import { redirect } from "next/navigation";
-import { isSlugAvailable, slugify } from "@/lib/firm";
-
-export async function checkSlugAvailability(firmName: string) {
-  const slug = slugify(firmName);
-  const available = await isSlugAvailable(slug);
-  return { slug, available };
-}
 
 export async function signUpWithEmail(
   _prevState: { error: string } | null,
@@ -25,4 +19,30 @@ export async function signUpWithEmail(
   if (error) return { error: error.message || 'Failed to create account' };
 
   redirect('/onboarding');
+}
+
+export const handleGoogleSignIn = async () => {
+  try {
+    await authClient.signIn.social({
+      provider: "google",
+      callbackURL: "/dashboard",
+      newUserCallbackURL: "/welcome",
+      errorCallbackURL: "/error"
+    });
+  } catch (error) {
+    console.error("Google sign-in error:", error);
+  }
+};
+
+export const handleGitHubSignIn = async () => {
+  try {
+    await authClient.signIn.social({
+      provider: "github",
+      callbackURL: "/dashboard",
+      newUserCallbackURL: "/welcome",
+      errorCallbackURL: "/error"
+    })
+  } catch (error) {
+    console.error("Github sign-in error:", error);
+  }
 }

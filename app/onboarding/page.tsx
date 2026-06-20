@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useRef, useTransition } from 'react';
-import { checkSlugAvailability } from '../(auth)/sign-up/actions';
+import { checkSlugAvailability } from './actions';
 
 export function FirmNameField() {
     const [firmName, setFirmName] = useState('');
