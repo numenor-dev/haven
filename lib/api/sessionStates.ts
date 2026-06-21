@@ -1,4 +1,4 @@
-import { db } from "../db/db";
+import { db } from "@/lib/db/db";
 import { eq } from "drizzle-orm";
 import {
   FirmNotFoundError,
@@ -6,9 +6,12 @@ import {
   TrialExhaustedError,
   SessionNotFoundError
 } from '@/lib/errors';
-import { chatSessions, attorneys } from "../db/schema";
-import { getFirmIdBySlug } from "../firm";
+import { chatSessions, attorneys } from "@/lib/db/schema";
+import { getFirmIdBySlug } from "@/lib/firm";
 import { ChatSession } from "@/types/types";
+
+export const maxLiveTurns = 50;
+export const maxSessionDuration = 3600000;
 
 export async function createSession(firmSlug: string, attorneyId?: string): Promise<ChatSession> {
   const firmId = await getFirmIdBySlug(firmSlug);
@@ -27,15 +30,14 @@ export async function createSession(firmSlug: string, attorneyId?: string): Prom
   return session;
 }
 
-export async function getSession(id: string): Promise<ChatSession | null> {
+export async function getSession(id: string): Promise<ChatSession> {
   const [session] = await db.select().from(chatSessions).where(eq(chatSessions.id, id));
-  return session ?? null;
+  if (!session) throw new SessionNotFoundError(id);
+  return session;
 }
 
-export async function incrementTurn(id: string): Promise<ChatSession | null> {
+export async function incrementTurn(id: string): Promise<ChatSession> {
   const session = await getSession(id);
-  if (!session) throw new SessionNotFoundError(id);
-
   const [updated] = await db
     .update(chatSessions)
     .set({ turnCount: session.turnCount + 1 })
@@ -44,9 +46,8 @@ export async function incrementTurn(id: string): Promise<ChatSession | null> {
   return updated;
 }
 
-export async function completeSession(id: string): Promise<ChatSession | null> {
+export async function completeSession(id: string): Promise<ChatSession> {
   const session = await getSession(id);
-  if (!session) throw new SessionNotFoundError(id);
   if (session.status === 'complete') return session;
 
   if (session.attorneyId) {
@@ -68,4 +69,9 @@ export async function completeSession(id: string): Promise<ChatSession | null> {
     .where(eq(chatSessions.id, id))
     .returning();
   return updated;
+}
+
+export function isSessionAtLimit(session: ChatSession): boolean {
+  const elapsed = Date.now() - session.createdAt.getTime();
+  return session.turnCount >= maxLiveTurns || elapsed >= maxSessionDuration;
 }

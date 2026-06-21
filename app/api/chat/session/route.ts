@@ -2,13 +2,16 @@ import { NextRequest, NextResponse } from 'next/server';
 import { eq } from 'drizzle-orm';
 import { auth } from '@/lib/auth/server';
 import { db } from '@/lib/db/db';
-import { FirmNotFoundError, TrialExhaustedError } from '@/lib/errors';
 import { attorneys, firms } from '@/lib/db/schema';
+import {
+    handleApiError
+} from '@/lib/errors';
 import {
     createSession,
     getSession,
     completeSession
 } from '@/lib/api/sessionStates';
+
 
 export async function POST(req: NextRequest) {
     const body = await req.json().catch(() => null);
@@ -38,13 +41,7 @@ export async function POST(req: NextRequest) {
         const session = await createSession(firmSlug, attorneyId);
         return NextResponse.json(session, { status: 201 });
     } catch (err) {
-        if (err instanceof TrialExhaustedError) {
-            return NextResponse.json({ error: err.message }, { status: 403 });
-        }
-        if (err instanceof FirmNotFoundError) {
-            return NextResponse.json({ error: err.message }, { status: 404 });
-        }
-        throw err;
+        return handleApiError(err);
     }
 }
 
@@ -54,30 +51,29 @@ export async function GET(req: NextRequest) {
         return NextResponse.json({ error: 'sessionId is required' }, { status: 400 });
     }
 
-    const session = await getSession(sessionId);
-    if (!session) {
-        return NextResponse.json({ error: 'Session not found' }, { status: 404 });
+    try {
+        const session = await getSession(sessionId);
+        return NextResponse.json(session);
+    } catch (err) {
+        return handleApiError(err);
     }
-
-    return NextResponse.json(session);
 }
 
 export async function PATCH(req: NextRequest) {
     const body = await req.json().catch(() => null);
     const sessionId = body?.sessionId;
-
     if (!sessionId || typeof sessionId !== 'string') {
         return NextResponse.json({ error: 'sessionId is required' }, { status: 400 });
     }
 
-    const currentSession = await getSession(sessionId);
-    if (!currentSession) {
-        return NextResponse.json({ error: 'Session not found' }, { status: 404 });
+    try {
+        const currentSession = await getSession(sessionId); // throws if current session is not found
+        if (currentSession.status === 'complete') {
+            return NextResponse.json({ error: 'Session already complete' }, { status: 409 });
+        }
+        const session = await completeSession(sessionId);
+        return NextResponse.json(session);
+    } catch (err) {
+        return handleApiError(err);
     }
-    if (currentSession.status === 'complete') {
-        return NextResponse.json({ error: 'Session already complete' }, { status: 409 });
-    }
-
-    const session = await completeSession(sessionId);
-    return NextResponse.json(session);
 }

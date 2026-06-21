@@ -4,12 +4,12 @@ import { auth } from "@/lib/auth/server";
 import { randomUUID } from "crypto";
 import { db } from "@/lib/db/db";
 import { firms, attorneys } from "@/lib/db/schema";
-import { slugify, isSlugAvailable } from "@/lib/firm";
+import { slugify, isFirmNameAvailable } from "@/lib/firm";
 import { redirect } from "next/navigation";
 
 export async function checkSlugAvailability(firmName: string) {
     const slug = slugify(firmName);
-    const available = await isSlugAvailable(slug);
+    const available = await isFirmNameAvailable(slug);
     return { slug, available };
 }
 
@@ -24,7 +24,7 @@ export async function createFirm(
     if (!firmName?.trim()) return { error: "Firm name is required." };
 
     const slug = slugify(firmName);
-    if (!(await isSlugAvailable(slug))) {
+    if (!(await isFirmNameAvailable(slug))) {
         return { error: `"${slug}" is already taken — try a more specific name.` };
     }
 

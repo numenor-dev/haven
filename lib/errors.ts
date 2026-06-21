@@ -1,3 +1,5 @@
+import { NextResponse } from 'next/server';
+
 export class AppError extends Error {
   constructor(message: string) {
     super(message);
@@ -27,4 +29,20 @@ export class SessionNotFoundError extends AppError {
   constructor(id: string) {
     super(`Session not found: ${id}`);
   }
+}
+
+const statusMap = new Map<new (...args: string[]) => AppError, number>([
+  [FirmNotFoundError, 404],
+  [SessionNotFoundError, 404],
+  [TrialExhaustedError, 403],
+]);
+
+export function handleApiError(err: unknown): NextResponse {
+  for (const [ErrorClass, status] of statusMap) {
+    if (err instanceof ErrorClass) {
+      return NextResponse.json({ error: err.message }, { status });
+    }
+  }
+  console.error('Unhandled error:', err);
+  return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
 }

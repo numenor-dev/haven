@@ -3,8 +3,10 @@ import { NextRequest } from "next/server";
 import {
     getSession,
     incrementTurn,
-    isTrialExhausted,
+    completeSession,
+    isSessionAtLimit
 } from "@/lib/api/sessionStates";
+import { handleApiError } from "@/lib/errors";
 
 const demoPrompt = `
 You are a warm, professional intake assistant for a personal injury law firm in Washington State.
@@ -114,7 +116,7 @@ export async function POST(req: NextRequest) {
 
             return new Response(buildStream(stream), { headers: sseHeaders });
         } catch (error) {
-            console.error('[stream route] Live request error:', error);
+            console.error('[stream route] Demo request error:', error);
             if (error instanceof Anthropic.APIError) {
                 return jsonError(error.message, error.status);
             }
@@ -132,15 +134,22 @@ export async function POST(req: NextRequest) {
         return jsonError('firm is required for live sessions', 400);
     }
 
-    const session = await getSession(sessionId);
-    if (!session) {
-        return jsonError('Session not found', 404);
+    let session;
+
+    try {
+        session = await getSession(sessionId);
+    } catch (err) {
+        return handleApiError(err);
     }
     if (session.status === 'complete') {
         return jsonError('Session already complete', 409);
     }
-    if (isTrialExhausted(session)) {
-        return jsonError('Trial session limit reached', 429);
+    if (isSessionAtLimit(session)) {
+        await completeSession(session.id).catch((err =>
+            console.error('[stream route] session has hit max turns or max duration limit:', err)
+        ));
+        return jsonError('Apologies, this conversation has reached its limit. ' +
+            'Please complete the session and an attorney will reach out as soon as possible.', 410);
     }
 
     try {

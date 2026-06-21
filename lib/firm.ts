@@ -11,7 +11,7 @@ export function slugify(name: string): string {
     .replace(/-+/g, '-');
 }
 
-export async function isSlugAvailable(slug: string): Promise<boolean> {
+export async function isFirmNameAvailable(slug: string): Promise<boolean> {
   const existing = await db.query.firms.findFirst({ where: eq(firms.slug, slug) });
   return !existing;
 }
