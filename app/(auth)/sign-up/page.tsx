@@ -1,48 +1,123 @@
 'use client';
 
-import { useActionState } from 'react';
-import { signUpWithEmail } from './actions';
+import { cn } from "@/lib/utils";
+import { useEffect, useActionState } from "react";
+import { Button } from "@/components/ui/button";
+import { toast } from "sonner";
+import { signUpWithEmail } from "./actions";
+import SignInProviders from "@/components/auth/SignInProviders";
+import {
+    Card,
+    CardContent,
+    CardDescription,
+    CardHeader,
+    CardTitle,
+} from "@/components/ui/card";
+import {
+    Field,
+    FieldGroup,
+    FieldLabel,
+} from "@/components/ui/field";
+import { Input } from "@/components/ui/input";
+import Link from "next/link";
+import { ArrowLongLeftIcon } from "@heroicons/react/24/solid";
 
-export default function SignUpPage() {
+export default function SignUpPage({ className }: React.ComponentProps<"div">) {
     const [state, formAction, isPending] = useActionState(signUpWithEmail, null);
 
+    useEffect(() => {
+        if (state?.error) {
+            toast.error(state.error);
+        }
+    }, [state?.error]);
+
     return (
-        <form action={formAction}
-            className="flex flex-col gap-5 min-h-screen items-center justify-center">
+        <div className="bg-zinc-200 dark:bg-zinc-900 min-h-screen">
+            <div className={cn("flex flex-col max-w-sm md:max-w-xl mt-24 mx-auto", className)}>
+                <Card className="dark:bg-zinc-800/50">
+                    <CardHeader>
+                        <CardTitle className="text-xl mx-auto mt-5 md:text-2xl">
+                            Create your account
+                        </CardTitle>
+                        <CardDescription className="md:text-base mx-auto">
+                            Get started with Haven today
+                        </CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                        <form action={formAction}>
+                            <FieldGroup className="gap-8 max-w-xs md:max-w-lg mt-5 mx-auto">
+                                <Field className="gap-1">
+                                    <FieldLabel htmlFor="name" className="text-base">
+                                        Name
+                                    </FieldLabel>
+                                    <Input
+                                        name="name"
+                                        id="name"
+                                        type="text"
+                                        placeholder="Jiminy Billy Bob"
+                                        className="h-10"
+                                        autoComplete="name"
+                                        required
+                                    />
+                                </Field>
+                                <Field className="gap-1">
+                                    <FieldLabel htmlFor="email" className="text-base">
+                                        Email
+                                    </FieldLabel>
+                                    <Input
+                                        name="email"
+                                        id="email"
+                                        type="email"
+                                        placeholder="jbb@firm.com"
+                                        className="h-10"
+                                        autoComplete="email"
+                                        required
+                                    />
+                                </Field>
+                                <Field className="gap-1">
+                                    <FieldLabel htmlFor="password" className="text-base">
+                                        Password
+                                    </FieldLabel>
+                                    <Input
+                                        name="password"
+                                        id="password"
+                                        type="password"
+                                        placeholder="••••••••"
+                                        className="h-10"
+                                        autoComplete="new-password"
+                                        required
+                                        minLength={8}
+                                    />
+                                </Field>
+                                <div className="flex flex-col gap-3">
+                                    <Button
+                                        type="submit"
+                                        disabled={isPending}
+                                        className="h-10 text-sm font-medium cursor-pointer"
+                                    >
+                                        {isPending ? 'Creating account…' : 'Create account'}
+                                    </Button>
 
-            <div className="w-sm">
-                <h1 className="mt-10 text-center text-2xl/9 font-bold text-white">Create new account</h1>
+                                    <SignInProviders />
+
+                                    <p className="text-sm text-center text-muted-foreground">
+                                        Already have an account?{' '}
+                                        <Link href="/login" className="underline-offset-4 hover:underline">
+                                            Sign in
+                                        </Link>
+                                    </p>
+                                </div>
+                            </FieldGroup>
+                        </form>
+                    </CardContent>
+                    <Link href="/" className="flex w-40 mt-3 mx-auto items-center">
+                        <div className="flex text-base space-x-1 mx-auto font-semibold tracking-tight">
+                            <ArrowLongLeftIcon className="size-5 mt-0.5" />
+                            <span className="text-zinc-700 dark:text-zinc-300">Go Back</span>
+                        </div>
+                    </Link>
+                </Card>
             </div>
-
-            <div className='flex flex-col gap-1.5 w-sm'>
-                <label htmlFor="name" className="block text-sm font-medium text-gray-100">Name</label>
-                <input id="name" name="name" type="text" required placeholder="John Doe"
-                    className="block rounded-md w-full bg-white/5 px-2 py-1.5 placeholder:text-gray-500 text-white outline-1 outline-white/10 focus:outline-indigo-500"
-                />
-            </div>
-
-            <div className='flex flex-col gap-1.5 w-sm'>
-                <label htmlFor="email" className="block text-sm font-medium text-gray-100">Email address</label>
-                <input id="email" name="email" type="email" required placeholder="john@my-company.com"
-                    className="block rounded-md w-full bg-white/5 px-2 py-1.5 placeholder:text-gray-500 text-white outline-1 outline-white/10  focus:outline-indigo-500" />
-            </div>
-
-            <div className='flex flex-col gap-1.5 w-sm'>
-                <label htmlFor="password" className="block text-sm font-medium text-gray-100">Password</label>
-                <input id="password" name="password" type="password" required placeholder="*****"
-                    className="block rounded-md w-full bg-white/5 px-2 py-1.5 placeholder:text-gray-500 text-white outline-1 outline-white/10  focus:outline-indigo-500" />
-            </div>
-
-            {state?.error && (
-                <div className="rounded-md px-3 py-2 text-sm text-red-500">
-                    {state.error}
-                </div>
-            )}
-
-            <button type="submit" disabled={isPending}
-                className="flex w-sm justify-center rounded-md bg-indigo-500 px-3 py-1.5 text-sm/6 font-semibold text-white hover:bg-indigo-400">
-                {isPending ? 'Creating account...' : 'Create Account'}
-            </button>
-        </form>
+        </div>
     );
 }

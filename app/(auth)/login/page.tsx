@@ -37,7 +37,7 @@ export default function LoginPage({ className }: React.ComponentProps<"div">) {
 
   useEffect(() => {
     if (state?.error) {
-      toast.error('Invalid email or password');
+      toast.error(state.error);
     }
   }, [state?.error])
 

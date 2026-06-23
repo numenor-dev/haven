@@ -2,22 +2,31 @@
 
 import { auth } from "@/lib/auth/server";
 import { redirect } from "next/navigation";
+import { z } from 'zod';
+
+const SignUpSchema = z.object({
+  name: z.string().min(1, 'Name is required'),
+  email: z.email('Invalid email address'),
+  password: z.string().min(8, 'Password must be at least 8 characters'),
+});
 
 export async function signUpWithEmail(
   _prevState: { error: string } | null,
   formData: FormData
 ) {
-  const name = formData.get('name') as string;
-  const email = formData.get('email') as string;
-
-  if (!name) return { error: 'Name must be provided.'}
-  if (!email) return { error: "Email must be provided." };
-
-  const { error } = await auth.signUp.email({
-    email,
-    name: formData.get('name') as string,
-    password: formData.get('password') as string,
+  const result = SignUpSchema.safeParse({
+    name: formData.get('name'),
+    email: formData.get('email'),
+    password: formData.get('password'),
   });
+
+  if (!result.success) {
+    return { error: result.error.issues[0].message };
+  }
+
+  const { name, email, password } = result.data;
+  const { error } = await auth.signUp.email({ name, email, password });
+
   if (error) return { error: error.message || 'Failed to create account' };
 
   redirect('/onboarding');
