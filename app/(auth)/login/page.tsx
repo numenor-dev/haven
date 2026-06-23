@@ -18,10 +18,15 @@ import {
   Field,
   FieldGroup,
   FieldLabel,
-} from "@/components/ui/field"
-import { Input } from "@/components/ui/input"
-import Link from "next/link"
-import { ArrowLongLeftIcon } from "@heroicons/react/24/solid"
+} from "@/components/ui/field";
+import { Input } from "@/components/ui/input";
+import Link from "next/link";
+import { ArrowLongLeftIcon } from "@heroicons/react/24/solid";
+
+const toastConfig = {
+    duration: 3000,
+    richColors: true
+} as const;
 
 function EmailPrefill({ onEmail }: { onEmail: (v: string) => void }) {
   const searchparams = useSearchParams();
@@ -37,9 +42,9 @@ export default function LoginPage({ className }: React.ComponentProps<"div">) {
 
   useEffect(() => {
     if (state?.error) {
-      toast.error(state.error);
+      toast.error(state.error, toastConfig);
     }
-  }, [state?.error])
+  }, [state])
 
   return (
     <div className="bg-zinc-200 dark:bg-zinc-900 min-h-screen">
@@ -62,6 +67,7 @@ export default function LoginPage({ className }: React.ComponentProps<"div">) {
                     Email
                   </FieldLabel>
                   <Input
+                    formNoValidate
                     value={emailValue}
                     onChange={(e) => setEmailValue(e.target.value)}
                     name="email"
@@ -70,7 +76,6 @@ export default function LoginPage({ className }: React.ComponentProps<"div">) {
                     placeholder="haven@example.com"
                     className="h-10"
                     autoComplete="email"
-                    required
 
                   />
                 </Field>
@@ -87,12 +92,12 @@ export default function LoginPage({ className }: React.ComponentProps<"div">) {
                     </a>
                   </div>
                   <Input
+                    formNoValidate
                     name="password"
                     id="password"
                     type="password"
                     className="h-10"
                     autoComplete="current-password"
-                    required
 
                   />
                 </Field>

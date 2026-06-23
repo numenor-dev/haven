@@ -30,16 +30,16 @@ export default function RootLayout({
       <body className="min-h-full font-inter flex flex-col">
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
           {children}
+          <Toaster
+            position="top-center"
+            toastOptions={{
+              classNames: {
+                toast: "!w-[350px] md:!w-[400px]",
+                title: "md:text-base font-medium"
+              }
+            }}
+          />
         </ThemeProvider>
-        <Toaster
-          position="top-center"
-          toastOptions={{
-            classNames: {
-              toast: "!w-[350px] md:!w-[400px]",
-              title: "md:text-base font-medium"
-            }
-          }}
-        />
       </body>
     </html>
   );

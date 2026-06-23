@@ -9,7 +9,6 @@ import SignInProviders from "@/components/auth/SignInProviders";
 import {
     Card,
     CardContent,
-    CardDescription,
     CardHeader,
     CardTitle,
 } from "@/components/ui/card";
@@ -22,14 +21,19 @@ import { Input } from "@/components/ui/input";
 import Link from "next/link";
 import { ArrowLongLeftIcon } from "@heroicons/react/24/solid";
 
+const toastConfig = {
+    duration: 3000,
+    richColors: true
+} as const;
+
 export default function SignUpPage({ className }: React.ComponentProps<"div">) {
     const [state, formAction, isPending] = useActionState(signUpWithEmail, null);
 
     useEffect(() => {
         if (state?.error) {
-            toast.error(state.error);
+            toast.error(state.error, toastConfig);
         }
-    }, [state?.error]);
+    }, [state]);
 
     return (
         <div className="bg-zinc-200 dark:bg-zinc-900 min-h-screen">
@@ -39,12 +43,11 @@ export default function SignUpPage({ className }: React.ComponentProps<"div">) {
                         <CardTitle className="text-xl mx-auto mt-5 md:text-2xl">
                             Create your account
                         </CardTitle>
-                        <CardDescription className="md:text-base mx-auto">
-                            Get started with Haven today
-                        </CardDescription>
                     </CardHeader>
                     <CardContent>
-                        <form action={formAction}>
+                        <form
+                            noValidate
+                            action={formAction}>
                             <FieldGroup className="gap-8 max-w-xs md:max-w-lg mt-5 mx-auto">
                                 <Field className="gap-1">
                                     <FieldLabel htmlFor="name" className="text-base">
@@ -57,7 +60,7 @@ export default function SignUpPage({ className }: React.ComponentProps<"div">) {
                                         placeholder="Jiminy Billy Bob"
                                         className="h-10"
                                         autoComplete="name"
-                                        required
+
                                     />
                                 </Field>
                                 <Field className="gap-1">
@@ -71,7 +74,6 @@ export default function SignUpPage({ className }: React.ComponentProps<"div">) {
                                         placeholder="jbb@firm.com"
                                         className="h-10"
                                         autoComplete="email"
-                                        required
                                     />
                                 </Field>
                                 <Field className="gap-1">
@@ -91,14 +93,13 @@ export default function SignUpPage({ className }: React.ComponentProps<"div">) {
                                 </Field>
                                 <div className="flex flex-col gap-3">
                                     <Button
-                                        type="submit"
                                         disabled={isPending}
                                         className="h-10 text-sm font-medium cursor-pointer"
                                     >
                                         {isPending ? 'Creating account…' : 'Create account'}
                                     </Button>
 
-                                    <SignInProviders />
+                                    <SignInProviders callbackURL="/onboarding" />
 
                                     <p className="text-sm text-center text-muted-foreground">
                                         Already have an account?{' '}

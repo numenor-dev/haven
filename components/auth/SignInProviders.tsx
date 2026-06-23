@@ -6,12 +6,16 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faGithub } from '@fortawesome/free-brands-svg-icons'
 import { GoogleIcon } from '@/components/ui/button';
 
+type SignInProvidersProps = {
+    callbackURL?: string;
+}
 
-export default function SignInProviders() {
+
+export default function SignInProviders({ callbackURL = '/dashboard' }: SignInProvidersProps) {
     async function handleGoogleSignIn() {
         await authClient.signIn.social({
             provider: 'google',
-            callbackURL: '/dashboard',
+            callbackURL,
             errorCallbackURL: '/login',
         });
     }
@@ -19,7 +23,7 @@ export default function SignInProviders() {
     async function handleGitHubSignIn() {
         await authClient.signIn.social({
             provider: 'github',
-            callbackURL: '/dashboard',
+            callbackURL,
             errorCallbackURL: '/login',
         });
     }
@@ -27,6 +31,7 @@ export default function SignInProviders() {
     return (
         <div className="flex flex-col gap-y-3">
             <Button
+                type="button"
                 onClick={handleGoogleSignIn}
                 variant="outline"
                 className="
@@ -38,6 +43,7 @@ export default function SignInProviders() {
                 <span className="text-sm text-zinc-800 dark:text-zinc-200 font-medium">Continue with Google</span>
             </Button>
             <Button
+                type="button"
                 onClick={handleGitHubSignIn}
                 className="h-10 gap-2.5 bg-zinc-900 hover:bg-zinc-900/90 dark:bg-black dark:hover:bg-black/50 cursor-pointer"
             >

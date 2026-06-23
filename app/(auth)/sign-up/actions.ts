@@ -5,9 +5,25 @@ import { redirect } from "next/navigation";
 import { z } from 'zod';
 
 const SignUpSchema = z.object({
-  name: z.string().min(1, 'Name is required'),
+  name: z.string()
+    .min(2, { message: "Name must be at least 2 characters long." })
+    .max(30, { message: "Name cannot exceed 30 characters." }),
   email: z.email('Invalid email address'),
-  password: z.string().min(8, 'Password must be at least 8 characters'),
+  password: z.string()
+    .min(8, { message: "Password must be at least 8 characters long." })
+    .max(64, { message: "Password cannot exceed 64 characters." })
+    .refine((password) => /[A-Z]/.test(password), {
+      message: "Password must contain at least one uppercase letter.",
+    })
+    .refine((password) => /[a-z]/.test(password), {
+      message: "Password must contain at least one lowercase letter.",
+    })
+    .refine((password) => /[0-9]/.test(password), {
+      message: "Password must contain at least one number.",
+    })
+    .refine((password) => /[!@#$%^&*?]/.test(password), {
+      message: "Password must contain at least one special character.",
+    }),
 });
 
 export async function signUpWithEmail(
