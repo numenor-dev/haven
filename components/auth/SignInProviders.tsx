@@ -1,31 +1,49 @@
 'use client';
 
 import { authClient } from '@/lib/auth/client';
-import { useState } from 'react';
-import { toast } from 'sonner';
+import { Button } from '@/components/ui/button';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { faGithub } from '@fortawesome/free-brands-svg-icons'
+import { GoogleIcon } from '@/components/ui/button';
 
-export function SignInButtons() {
-  const [error, setError] = useState<string | null>(null);
 
-  const signInWith = async (provider: 'google' | 'github') => {
-    setError(null);
-    try {
-      await authClient.signIn.social({
-        provider,
-        callbackURL: '/dashboard',
-        newUserCallbackURL: '/onboarding',
-        errorCallbackURL: '/error',
-      });
-    } catch {
-      setError('Sign-in failed. Please try again.');
-      toast.error(error);
+export default function SignInProviders() {
+    async function handleGoogleSignIn() {
+        await authClient.signIn.social({
+            provider: 'google',
+            callbackURL: '/dashboard',
+            errorCallbackURL: '/login',
+        });
     }
-  };
 
-  return (
-    <div>
-      <button onClick={() => signInWith('google')}>Continue with Google</button>
-      <button onClick={() => signInWith('github')}>Continue with GitHub</button>
-    </div>
-  );
+    async function handleGitHubSignIn() {
+        await authClient.signIn.social({
+            provider: 'github',
+            callbackURL: '/dashboard',
+            errorCallbackURL: '/login',
+        });
+    }
+
+    return (
+        <div className="flex flex-col gap-y-3">
+            <Button
+                onClick={handleGoogleSignIn}
+                variant="outline"
+                className="
+                h-10 gap-2.5 bg-white hover:bg-zinc-50 dark:bg-slate-700 dark:hover:bg-slate-600/70
+                text-zinc-800 dark:text-zinc-200 cursor-pointer
+                "
+            >
+                <GoogleIcon />
+                <span className="text-sm text-zinc-800 dark:text-zinc-200 font-medium">Continue with Google</span>
+            </Button>
+            <Button
+                onClick={handleGitHubSignIn}
+                className="h-10 gap-2.5 bg-zinc-900 hover:bg-zinc-900/90 dark:bg-black dark:hover:bg-black/50 cursor-pointer"
+            >
+                <FontAwesomeIcon icon={faGithub} />
+                <span className="text-sm font-medium">Continue with GitHub</span>
+            </Button>
+        </div>
+    );
 }

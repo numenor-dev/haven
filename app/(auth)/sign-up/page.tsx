@@ -3,7 +3,7 @@
 import { useActionState } from 'react';
 import { signUpWithEmail } from './actions';
 
-export default function SignUpForm() {
+export default function SignUpPage() {
     const [state, formAction, isPending] = useActionState(signUpWithEmail, null);
 
     return (
