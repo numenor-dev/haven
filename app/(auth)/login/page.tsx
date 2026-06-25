@@ -24,8 +24,8 @@ import Link from "next/link";
 import { ArrowLongLeftIcon } from "@heroicons/react/24/solid";
 
 const toastConfig = {
-    duration: 3000,
-    richColors: true
+  duration: 3000,
+  richColors: true
 } as const;
 
 function EmailPrefill({ onEmail }: { onEmail: (v: string) => void }) {
@@ -51,9 +51,11 @@ export default function LoginPage({ className }: React.ComponentProps<"div">) {
       <div className={cn("flex flex-col max-w-sm md:max-w-xl mt-24 mx-auto", className)}>
         <Card className="dark:bg-zinc-800/50">
           <CardHeader>
-            <CardTitle className="text-xl mx-auto mt-5 md:text-2xl">Login to your account</CardTitle>
+            <CardTitle className="text-xl mx-auto mt-5 md:text-2xl tracking-tighter">
+              Welcome!
+            </CardTitle>
             <CardDescription className="md:text-base mx-auto">
-              Enter your email below to login to your account
+              Please sign in to your account
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -61,9 +63,9 @@ export default function LoginPage({ className }: React.ComponentProps<"div">) {
               <Suspense fallback={null}>
                 <EmailPrefill onEmail={setEmailValue} />
               </Suspense>
-              <FieldGroup className="gap-8 max-w-xs md:max-w-lg mt-5 mx-auto">
+              <FieldGroup className="gap-7 max-w-xs md:max-w-lg mt-5 mx-auto">
                 <Field className="gap-1">
-                  <FieldLabel htmlFor="email" className="text-base">
+                  <FieldLabel htmlFor="email" className="text-sm">
                     Email
                   </FieldLabel>
                   <Input
@@ -81,7 +83,7 @@ export default function LoginPage({ className }: React.ComponentProps<"div">) {
                 </Field>
                 <Field className="gap-1">
                   <div className="flex items-center">
-                    <FieldLabel htmlFor="password" className="text-base">
+                    <FieldLabel htmlFor="password" className="text-sm">
                       Password
                     </FieldLabel>
                     <a

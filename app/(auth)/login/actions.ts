@@ -11,7 +11,7 @@ const SignInSchema = z.object({
 
 export async function signInWithEmail(
     _prevState: { error: string } | null,
-  formData: FormData
+    formData: FormData
 ) {
     const result = SignInSchema.safeParse({
         email: formData.get('email'),

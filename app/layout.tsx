@@ -1,9 +1,8 @@
 import type { Metadata } from "next";
-import { ThemeProvider } from "next-themes";
 import { Inter } from "next/font/google";
 import "./globals.css";
 import { cn } from "@/lib/utils";
-import { Toaster } from "@/components/ui/sonner";
+import { Providers } from "@/components/providers";
 
 
 const inter = Inter({
@@ -27,19 +26,10 @@ export default function RootLayout({
       className={cn("antialiased", inter.variable)}
       suppressHydrationWarning
     >
-      <body className="min-h-full font-inter flex flex-col">
-        <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
+      <body className="min-h-full font-inter flex flex-col" suppressHydrationWarning>
+        <Providers>
           {children}
-          <Toaster
-            position="top-center"
-            toastOptions={{
-              classNames: {
-                toast: "!w-[350px] md:!w-[400px]",
-                title: "md:text-base font-medium"
-              }
-            }}
-          />
-        </ThemeProvider>
+        </Providers>
       </body>
     </html>
   );

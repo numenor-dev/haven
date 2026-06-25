@@ -1,7 +1,7 @@
 'use client';
 
 import { cn } from "@/lib/utils";
-import { useEffect, useActionState } from "react";
+import { useState, useEffect, useActionState } from "react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { signUpWithEmail } from "./actions";
@@ -28,6 +28,8 @@ const toastConfig = {
 
 export default function SignUpPage({ className }: React.ComponentProps<"div">) {
     const [state, formAction, isPending] = useActionState(signUpWithEmail, null);
+    const [nameValue, setNameValue] = useState('');
+    const [emailValue, setEmailValue] = useState('');
 
     useEffect(() => {
         if (state?.error) {
@@ -36,11 +38,11 @@ export default function SignUpPage({ className }: React.ComponentProps<"div">) {
     }, [state]);
 
     return (
-        <div className="bg-zinc-200 dark:bg-zinc-900 min-h-screen">
+        <div className="bg-zinc-200 dark:bg-zinc-900 min-h-screen pb-10">
             <div className={cn("flex flex-col max-w-sm md:max-w-xl mt-24 mx-auto", className)}>
                 <Card className="dark:bg-zinc-800/50">
                     <CardHeader>
-                        <CardTitle className="text-xl mx-auto mt-5 md:text-2xl">
+                        <CardTitle className="text-xl mx-auto mt-5 md:text-2xl tracking-tighter">
                             Create your account
                         </CardTitle>
                     </CardHeader>
@@ -48,48 +50,55 @@ export default function SignUpPage({ className }: React.ComponentProps<"div">) {
                         <form
                             noValidate
                             action={formAction}>
-                            <FieldGroup className="gap-8 max-w-xs md:max-w-lg mt-5 mx-auto">
+                            <FieldGroup className="gap-5 max-w-xs md:max-w-lg mt-5 mx-auto">
                                 <Field className="gap-1">
-                                    <FieldLabel htmlFor="name" className="text-base">
+                                    <FieldLabel htmlFor="name" className="text-sm ml-1">
                                         Name
                                     </FieldLabel>
                                     <Input
+                                        onChange={(e) => setNameValue(e.target.value)}
+                                        value={nameValue}
+                                        placeholder="Enter your name"
                                         name="name"
                                         id="name"
                                         type="text"
-                                        placeholder="Jiminy Billy Bob"
                                         className="h-10"
                                         autoComplete="name"
 
                                     />
                                 </Field>
                                 <Field className="gap-1">
-                                    <FieldLabel htmlFor="email" className="text-base">
+                                    <FieldLabel htmlFor="email" className="text-sm ml-1">
                                         Email
                                     </FieldLabel>
                                     <Input
+                                        onChange={(e) => setEmailValue(e.target.value)}
+                                        value={emailValue}
+                                        placeholder="Enter your email"
                                         name="email"
                                         id="email"
                                         type="email"
-                                        placeholder="jbb@firm.com"
                                         className="h-10"
                                         autoComplete="email"
                                     />
                                 </Field>
                                 <Field className="gap-1">
-                                    <FieldLabel htmlFor="password" className="text-base">
+                                    <FieldLabel htmlFor="password" className="text-sm">
                                         Password
                                     </FieldLabel>
                                     <Input
+                                        placeholder="Create a password"
                                         name="password"
                                         id="password"
                                         type="password"
-                                        placeholder="••••••••"
                                         className="h-10"
                                         autoComplete="new-password"
-                                        required
                                         minLength={8}
                                     />
+                                    <p className="mt-1">
+                                        Password must be a minimum of 8 characters and contain one
+                                        uppercase letter, one number, and a special character.
+                                    </p>
                                 </Field>
                                 <div className="flex flex-col gap-3">
                                     <Button
@@ -99,9 +108,14 @@ export default function SignUpPage({ className }: React.ComponentProps<"div">) {
                                         {isPending ? 'Creating account…' : 'Create account'}
                                     </Button>
 
+                                    <div className="flex items-center gap-3 my-4">
+                                        <div className="flex-1 border-t border-gray-300" />
+                                        <span className="text-gray-500 text-sm">or</span>
+                                        <div className="flex-1 border-t border-gray-300" />
+                                    </div>
                                     <SignInProviders callbackURL="/onboarding" />
 
-                                    <p className="text-sm text-center text-muted-foreground">
+                                    <p className="mt-1 text-sm text-center text-muted-foreground">
                                         Already have an account?{' '}
                                         <Link href="/login" className="underline-offset-4 hover:underline">
                                             Sign in

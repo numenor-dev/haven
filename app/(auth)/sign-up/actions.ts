@@ -37,11 +37,15 @@ export async function signUpWithEmail(
   });
 
   if (!result.success) {
-    return { error: result.error.issues[0].message };
+    return {
+      error: result.error.issues[0].message
+    };
   }
 
   const { name, email, password } = result.data;
   const { error } = await auth.signUp.email({ name, email, password });
+
+  if (error?.status === 422) return { error: 'It looks like you may already have an account' }
 
   if (error) return { error: error.message || 'Failed to create account' };
 
