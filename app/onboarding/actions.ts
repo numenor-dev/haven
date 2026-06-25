@@ -6,6 +6,13 @@ import { db } from "@/lib/db/db";
 import { firms, attorneys } from "@/lib/db/schema";
 import { slugify, isFirmNameAvailable } from "@/lib/firm";
 import { redirect } from "next/navigation";
+import { z } from "zod";
+
+const OnboardingSchema = z.object({
+    firmName: z.string()
+        .min(2, { message: "Firm name must be at least 2 characters." })
+        .max(50, { message: "Firm name cannot exceed 50 characters." })
+});
 
 export async function checkSlugAvailability(firmName: string) {
     const slug = slugify(firmName);
@@ -18,14 +25,21 @@ export async function createFirm(
     formData: FormData
 ) {
     const { data: session } = await auth.getSession();
-    if (!session?.user) redirect('/auth/sign-in');
+    if (!session?.user) redirect('/login');
 
-    const firmName = formData.get('firmName') as string;
-    if (!firmName?.trim()) return { error: "Firm name is required." };
+    const result = OnboardingSchema.safeParse({
+        firmName: formData.get('firmName'),
+    });
+
+    if (!result.success) {
+        return { error: result.error.issues[0].message };
+    }
+
+    const { firmName } = result.data;
 
     const slug = slugify(firmName);
     if (!(await isFirmNameAvailable(slug))) {
-        return { error: `"${slug}" is already taken — try a more specific name.` };
+        return { error: `"${slug}" is already taken. Please try a more specific name.` };
     }
 
     const firmId = randomUUID();
@@ -43,8 +57,13 @@ export async function createFirm(
                 firmId,
             }),
         ]);
-    } catch {
-        return { error: `"${slug}" was just taken — try a more specific name.` };
+    } catch (err) {
+        const isUniqueViolation =
+            err instanceof Error && err.message.includes('unique constraint');
+        if (isUniqueViolation) {
+            return { error: `"${slug}" is already taken. Please try a more specific name.` };
+        }
+        return { error: 'Something went wrong creating your firm. Please try again.' };
     }
 
     redirect('/dashboard');

@@ -27,6 +27,24 @@ export type LiveSessionReturn = {
     cancel: () => void;
 }
 
+export type ChatRecordsStatus = 'new' | 'reviewed'
+
+export type ChatRecordsListItem = {
+    id: string;
+    sessionId: string;
+    clientName: string;
+    status: ChatRecordsStatus;
+    pdfUrl: string | null;
+    createdAt: Date;
+    updatedAt: Date | null;
+    completedAt: Date | null;
+}
+
+export type ChatRecordsData = ChatRecordsListItem & {
+    transcript: Message[];
+    structuredData: Record<string, unknown> | null;
+}
+
 export type DemoSessionReturn = {
     status: SessionStatus;
     messages: Message[];
@@ -56,3 +74,13 @@ export type UseStreamReturn = {
     startStream: (messageHistory: Message[], options: StreamOptions) => void;
     cancelStream: () => void;
 }
+
+export type TranscriptMessage = {
+    role: 'user' | 'assistant';
+    content: string;
+    timestamp: string
+};
+export type StructuredData = {
+    summary: string;
+    actionItems: string[]
+};
