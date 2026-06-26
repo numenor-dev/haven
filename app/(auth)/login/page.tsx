@@ -114,7 +114,7 @@ export default function LoginPage({ className }: React.ComponentProps<"div">) {
 
                   <SignInProviders />
 
-                  <p className="text-sm text-center text-muted-foreground">
+                  <p className="text-sm text-center text-muted-foreground mt-1">
                     Don&apos;t have an account? <Link href="/sign-up">Sign up</Link>
                   </p>
                 </div>

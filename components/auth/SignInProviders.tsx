@@ -6,16 +6,13 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faGithub } from '@fortawesome/free-brands-svg-icons'
 import { GoogleIcon } from '@/components/ui/button';
 
-type SignInProvidersProps = {
-    callbackURL?: string;
-}
 
-
-export default function SignInProviders({ callbackURL = '/dashboard' }: SignInProvidersProps) {
+export default function SignInProviders() {
     async function handleGoogleSignIn() {
         await authClient.signIn.social({
             provider: 'google',
-            callbackURL,
+            callbackURL: '/dashboard',
+            newUserCallbackURL: '/onboarding',
             errorCallbackURL: '/login',
         });
     }
@@ -23,7 +20,8 @@ export default function SignInProviders({ callbackURL = '/dashboard' }: SignInPr
     async function handleGitHubSignIn() {
         await authClient.signIn.social({
             provider: 'github',
-            callbackURL,
+            callbackURL: '/dashboard',
+            newUserCallbackURL: '/onboarding',
             errorCallbackURL: '/login',
         });
     }

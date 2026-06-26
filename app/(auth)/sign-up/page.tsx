@@ -113,7 +113,8 @@ export default function SignUpPage({ className }: React.ComponentProps<"div">) {
                                         <span className="text-gray-500 text-sm">or</span>
                                         <div className="flex-1 border-t border-gray-300" />
                                     </div>
-                                    <SignInProviders callbackURL="/onboarding" />
+
+                                    <SignInProviders />
 
                                     <p className="mt-1 text-sm text-center text-muted-foreground">
                                         Already have an account?{' '}
