@@ -19,7 +19,7 @@ export async function getFirmIdForUser(neonAuthUserId: string): Promise<string |
     return result[0]?.firmId ?? null;
 }
 
-export async function getFirmchatRecords(firmId: string): Promise<ChatRecordsListItem[]> {
+export async function getFirmChatRecords(firmId: string): Promise<ChatRecordsListItem[]> {
     const rows = await db
         .select({
             id: chatRecords.id,

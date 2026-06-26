@@ -145,4 +145,5 @@
 
 .chat-bg {
   background: var(--background-two);
+  color: var(--card-foreground);
 }

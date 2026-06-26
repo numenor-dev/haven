@@ -38,7 +38,7 @@ export default function SignUpPage({ className }: React.ComponentProps<"div">) {
     }, [state]);
 
     return (
-        <div className="bg-zinc-200 dark:bg-zinc-900 min-h-screen pb-10">
+        <div className="chat-bg min-h-screen pb-10">
             <div className={cn("flex flex-col max-w-sm md:max-w-xl mt-24 mx-auto", className)}>
                 <Card className="dark:bg-zinc-800/50">
                     <CardHeader>
