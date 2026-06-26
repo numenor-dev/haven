@@ -1,4 +1,6 @@
+import 'server-only';
 import { db } from "./db/db";
+import { cache } from "react";
 import { chatSessions, chatRecords, attorneys } from "./db/schema";
 import { eq, desc, and } from "drizzle-orm";
 import {
@@ -9,7 +11,7 @@ import {
 } from '@/types/types';
 
 
-export async function getFirmIdForUser(neonAuthUserId: string): Promise<string | null> {
+export const getFirmIdForUser = cache(async (neonAuthUserId: string): Promise<string | null> => {
     const result = await db
         .select({ firmId: attorneys.firmId })
         .from(attorneys)
@@ -17,7 +19,7 @@ export async function getFirmIdForUser(neonAuthUserId: string): Promise<string |
         .limit(1);
 
     return result[0]?.firmId ?? null;
-}
+});
 
 export async function getFirmChatRecords(firmId: string): Promise<ChatRecordsListItem[]> {
     const rows = await db
