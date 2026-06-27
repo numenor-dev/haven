@@ -14,7 +14,7 @@ export default function Header() {
 
     return (
         <motion.header
-            className="fixed top-0 left-0 right-0 z-50"
+            className="fixed top-0 left-0 right-0 z-50 border-b border-b-zinc-200 dark:border-b-zinc-700"
             initial={{ opacity: 0, y: -12 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.4, ease: "easeOut" }}
@@ -31,9 +31,9 @@ export default function Header() {
                 style={{ opacity: borderOpacity }}
             />
 
-            <div className="relative max-w-7xl mx-auto px-6 h-20 flex items-center">
+            <div className="relative mx-auto px-12 h-16 flex items-center">
                 <Link href="/dashboard" className="flex items-center">
-                    <span className="text-lg font-semibold tracking-tight">
+                    <span className="text-lg font-semibold tracking-tight text-zinc-800 dark:text-zinc-200">
                         Haven
                     </span>
                 </Link>

@@ -41,7 +41,7 @@ export default function Account() {
         <div className="relative" ref={ref}>
             <button
                 onClick={() => setIsOpen(!isOpen)}
-                className="flex items-center gap-1.5 text-zinc-600 hover:text-zinc-900 transition-colors duration-200"
+                className="flex items-center gap-1 text-zinc-600 dark:text-zinc-300"
             >
                 <UserCircleIcon className="size-6" />
                 <ChevronDownIcon
@@ -68,7 +68,7 @@ export default function Account() {
                             onClick={() => setIsOpen(false)}
                             className="block px-4 py-2 text-sm text-zinc-700 hover:bg-zinc-50 transition-colors duration-200"
                         >
-                            Dashboard
+                            Profile
                         </Link>
                     </div>
 
