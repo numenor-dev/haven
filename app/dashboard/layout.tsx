@@ -16,10 +16,10 @@ export default async function DashboardLayout({ children }: { children: React.Re
     if (!firmId) redirect('/onboarding');
 
     return (
-        <div className="min-h-screen bg-zinc-50 dark:bg-zinc-900">
+        <div className="min-h-screen bg-zinc-100 dark:bg-zinc-950">
             <Header />
-            <main className="ml-60 pt-16 min-h-screen">
-                <div className="px-8 py-6">
+            <main className="pt-16 min-h-screen">
+                <div>
                     {children}
                 </div>
             </main>

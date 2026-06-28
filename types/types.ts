@@ -31,20 +31,19 @@ export type ChatRecordsStatus = 'new' | 'reviewed'
 
 export type ChatRecordsListItem = {
     id: string;
-    sessionId: string;
-    clientName: string;
+    clientName: string | null;
     status: ChatRecordsStatus;
-    pdfUrl: string | null;
     createdAt: Date;
-    updatedAt: Date | null;
-    completedAt: Date | null;
-}
+};
 
 export type ChatRecordsData = ChatRecordsListItem & {
-    transcript: Message[];
-    structuredData: Record<string, unknown> | null;
-}
-
+    sessionId: string;
+    pdfUrl: string | null;
+    updatedAt: Date | null;
+    completedAt: Date | null;
+    transcript: TranscriptMessage[];
+    structuredData: StructuredData | null;
+};
 export type DemoSessionReturn = {
     status: SessionStatus;
     messages: Message[];
