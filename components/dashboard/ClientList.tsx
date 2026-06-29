@@ -29,13 +29,13 @@ export default function ClientList({ chats }: { chats: ChatRecordsListItem[] }) 
 
     return (
         <aside className={cn(
-            'border-r border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950 flex flex-col overflow-hidden transition-all duration-200',
+            'border-r border-zinc-300 dark:border-zinc-700/80 bg-zinc-200/30 dark:bg-zinc-950 flex flex-col overflow-hidden transition-all duration-200',
             isOpen ? 'w-72' : 'w-16'
         )}>
             {isOpen && (
                 <>
                     {/* Header */}
-                    <div className="px-4 py-2 border-b border-zinc-100 dark:border-zinc-800 shrink-0">
+                    <div className="px-4 pt-10 pb-5 shrink-0">
                         <div className="flex items-center justify-between">
                             <h2 className="mx-auto text-sm font-semibold text-zinc-900 dark:text-zinc-100">
                                 Clients

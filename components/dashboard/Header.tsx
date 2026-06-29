@@ -1,11 +1,12 @@
 'use client';
 
 import { motion, useScroll, useTransform } from "motion/react";
+import { DashboardHeaderProps } from "@/types/types";
 import { ThemeToggle } from "@/components/ui/themetoggle";
 import Link from "next/link";
 import Account from "../dashboard/Account";
 
-export default function Header() {
+export default function Header({ firmName }: DashboardHeaderProps){
 
     const { scrollY } = useScroll();
 
@@ -14,7 +15,7 @@ export default function Header() {
 
     return (
         <motion.header
-            className="fixed top-0 left-0 right-0 z-50 border-b border-b-zinc-300 dark:border-b-zinc-700"
+            className="fixed top-0 left-0 right-0 z-50 border-b border-b-zinc-300 dark:border-b-zinc-700/80"
             initial={{ opacity: 0, y: -12 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.4, ease: "easeOut" }}
@@ -34,7 +35,7 @@ export default function Header() {
             <div className="relative mx-auto px-12 h-16 flex items-center">
                 <Link href="/dashboard" className="flex items-center">
                     <span className="text-lg font-semibold tracking-tight text-zinc-800 dark:text-zinc-200">
-                        Haven
+                       {firmName ?? "Haven"}
                     </span>
                 </Link>
 

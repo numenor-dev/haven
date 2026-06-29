@@ -1,4 +1,5 @@
 import { db } from "./db/db";
+import { cache } from "react";
 import { firms } from "./db/schema";
 import { eq } from "drizzle-orm";
 
@@ -20,3 +21,8 @@ export async function getFirmIdBySlug(slug: string): Promise<string | null> {
   const [firm] = await db.select({ id: firms.id }).from(firms).where(eq(firms.slug, slug));
   return firm?.id ?? null;
 }
+
+export const getFirmNameForUser = cache(async(id: string): Promise<string | null> => {
+  const [firm] = await db.select({ firmName: firms.firmName }).from(firms).where(eq(firms.id, id));
+  return firm?.firmName ?? null;
+})

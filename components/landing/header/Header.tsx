@@ -55,11 +55,7 @@ export default function Header() {
                     style={{ opacity: backdropOpacity }}
                 />
 
-                {/*
-                  * Force a solid backdrop on mobile when the menu is open.
-                  * At scrollY = 0, backdropOpacity is 0, so the header row would
-                  * appear transparent behind the open dropdown. This layer fixes that.
-                  */}
+                {/* Force solid backdrop on mobile when the menu is open */}
                 <AnimatePresence>
                     {menuOpen && (
                         <motion.div

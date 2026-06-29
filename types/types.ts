@@ -83,3 +83,7 @@ export type StructuredData = {
     summary: string;
     actionItems: string[]
 };
+
+export type DashboardHeaderProps = {
+    firmName: string | null;
+}

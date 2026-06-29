@@ -10,7 +10,6 @@ import {
     ChatRecordsData
 } from '@/types/types';
 
-
 export const getFirmIdForUser = cache(async (neonAuthUserId: string): Promise<string | null> => {
     const result = await db
         .select({ firmId: attorneys.firmId })
@@ -21,7 +20,7 @@ export const getFirmIdForUser = cache(async (neonAuthUserId: string): Promise<st
     return result[0]?.firmId ?? null;
 });
 
-export async function getFirmChatRecords(firmId: string): Promise<ChatRecordsListItem[]> {
+export const getFirmChatRecords = cache(async (firmId: string): Promise<ChatRecordsListItem[]> => {
     const rows = await db
         .select({
             id: chatRecords.id,
@@ -30,6 +29,7 @@ export async function getFirmChatRecords(firmId: string): Promise<ChatRecordsLis
             status: chatRecords.status,
             pdfUrl: chatRecords.pdfUrl,
             createdAt: chatRecords.createdAt,
+            updatedAt: chatRecords.updatedAt,
             completedAt: chatSessions.completedAt,
         })
         .from(chatRecords)
@@ -38,7 +38,7 @@ export async function getFirmChatRecords(firmId: string): Promise<ChatRecordsLis
         .orderBy(desc(chatRecords.createdAt));
 
     return rows as ChatRecordsListItem[];
-}
+});
 
 export async function getChatRecordsById(recordId: string, firmId: string): Promise<ChatRecordsData | null> {
     const rows = await db
@@ -49,6 +49,7 @@ export async function getChatRecordsById(recordId: string, firmId: string): Prom
             status: chatRecords.status,
             pdfUrl: chatRecords.pdfUrl,
             createdAt: chatRecords.createdAt,
+            updatedAt: chatRecords.updatedAt,
             completedAt: chatSessions.completedAt,
             transcript: chatRecords.transcript,
             structuredData: chatRecords.structuredData,
@@ -67,7 +68,7 @@ export async function getChatRecordsById(recordId: string, firmId: string): Prom
 
     return {
         ...rows[0],
-        transcript: rows[0].transcript as Message[],
+        transcript: rows[0].transcript as Message[], // returns JSON column
         structuredData: rows[0].structuredData as Record<string, unknown> | null,
     } as ChatRecordsData;
 }
@@ -88,5 +89,5 @@ export async function updateChatRecordsStatus(
         )
         .returning();
 
-    return rows[0] as ChatRecordsListItem ?? null;
+    return (rows[0] as ChatRecordsListItem) ?? null;
 }

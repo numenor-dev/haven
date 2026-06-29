@@ -8,6 +8,13 @@
       "when": 1782332377813,
       "tag": "0000_rainy_dark_beast",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1782770575782,
+      "tag": "0001_rapid_hex",
+      "breakpoints": true
     }
   ]
 }

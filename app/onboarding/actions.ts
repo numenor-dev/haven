@@ -48,7 +48,7 @@ export async function createFirm(
         await db.batch([
             db.insert(firms).values({
                 id: firmId,
-                name: firmName,
+                firmName: firmName,
                 slug,
                 notificationEmail: session.user.email,
             }),

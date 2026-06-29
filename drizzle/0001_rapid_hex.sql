@@ -1,0 +1,1 @@
+ALTER TABLE "firms" RENAME COLUMN "name" TO "firm_name";

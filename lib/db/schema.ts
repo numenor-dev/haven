@@ -16,7 +16,7 @@ export const recordStatusEnum = pgEnum('record_status', ['new', 'reviewed']);
 
 export const firms = pgTable('firms', {
   id: uuid('id').primaryKey().defaultRandom(),
-  name: text('name').notNull(),
+  firmName: text('firm_name').notNull(),
   slug: text('slug').notNull().unique(),
   notificationEmail: text('notification_email').notNull(),
   logoUrl: text('logo_url'),
