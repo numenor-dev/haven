@@ -10,7 +10,7 @@ import {
     createSession,
     getSession,
     completeSession
-} from '@/lib/api/sessionStates';
+} from '@/lib/api/chatSessions';
 
 
 export async function POST(req: NextRequest) {

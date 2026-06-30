@@ -87,3 +87,8 @@ export type StructuredData = {
 export type DashboardHeaderProps = {
     firmName: string | null;
 }
+
+export type DataPanelProps = {
+    record: ChatRecordsData | null;
+    userName: string | null;
+};

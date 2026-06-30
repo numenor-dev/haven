@@ -1,10 +1,11 @@
 import { db } from "@/lib/db/db";
-import { eq } from "drizzle-orm";
+import { eq, sql, and } from "drizzle-orm";
 import {
   FirmNotFoundError,
   AttorneyNotFoundError,
   TrialExhaustedError,
-  SessionNotFoundError
+  SessionNotFoundError,
+  ConcurrentSessionError
 } from '@/lib/errors';
 import { chatSessions, attorneys } from "@/lib/db/schema";
 import { getFirmIdBySlug } from "@/lib/firm";
@@ -19,11 +20,21 @@ export async function createSession(firmSlug: string, attorneyId?: string): Prom
 
   if (attorneyId) {
     const [attorney] = await db
-      .select({ isTrialExhausted: attorneys.isTrialExhausted })
+      .select({ firmId: attorneys.firmId, isTrialExhausted: attorneys.isTrialExhausted })
       .from(attorneys)
       .where(eq(attorneys.id, attorneyId));
     if (!attorney) throw new AttorneyNotFoundError(attorneyId);
+    if (attorney.firmId !== firmId) throw new AttorneyNotFoundError(attorneyId);
     if (attorney.isTrialExhausted) throw new TrialExhaustedError();
+
+    const [existingSession] = await db
+    .select({ id: chatSessions.id})
+    .from(chatSessions)
+    .where(and(
+      eq(chatSessions.attorneyId, attorneyId),
+      eq(chatSessions.status, 'active'),
+    ));
+    if (existingSession) throw new ConcurrentSessionError(attorneyId);
   }
 
   const [session] = await db.insert(chatSessions).values({ firmId, attorneyId }).returning();
@@ -37,12 +48,12 @@ export async function getSession(id: string): Promise<ChatSession> {
 }
 
 export async function incrementTurn(id: string): Promise<ChatSession> {
-  const session = await getSession(id);
   const [updated] = await db
     .update(chatSessions)
-    .set({ turnCount: session.turnCount + 1 })
+    .set({ turnCount: sql`${chatSessions.turnCount} + 1` })
     .where(eq(chatSessions.id, id))
     .returning();
+  if (!updated) throw new SessionNotFoundError(id);
   return updated;
 }
 

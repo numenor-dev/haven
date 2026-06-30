@@ -5,7 +5,7 @@ import {
     incrementTurn,
     completeSession,
     isSessionAtLimit
-} from "@/lib/api/sessionStates";
+} from "@/lib/api/chatSessions";
 import { handleApiError } from "@/lib/errors";
 
 const demoPrompt = `

@@ -93,7 +93,7 @@ export function useStream({ onChunk, onComplete, onError }: UseStreamProps): Use
                 if (!completed) onComplete();
             } catch (error) {
                 reader?.cancel();
-                // AbortError is intentional (cancelStream called) — not an error
+                // AbortError is intentional since cancel is called
                 if (error instanceof DOMException && error.name === "AbortError") return;
                 console.error("[useStream] Stream error:", error);
                 onError(error instanceof Error ? error : new Error(String(error)));

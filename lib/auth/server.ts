@@ -4,7 +4,7 @@ export const auth = createNeonAuth({
     baseUrl: process.env.NEON_AUTH_BASE_URL!,
     cookies: {
         secret: process.env.NEON_AUTH_COOKIE_SECRET!,
-        sessionDataTtl: 300,
+        sessionDataTtl: 500,
     },
     logLevel: process.env.NODE_ENV === 'production' ? 'warn' : 'debug',
 })

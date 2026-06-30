@@ -31,10 +31,18 @@ export class SessionNotFoundError extends AppError {
   }
 }
 
-const statusMap = new Map<new (...args: string[]) => AppError, number>([
+export class ConcurrentSessionError extends AppError {
+  constructor(attorneyId: string) {
+    super(`Active trial ${attorneyId} already in progress`);
+  }
+}
+
+const statusMap: Map<typeof AppError, number> = new Map([
   [FirmNotFoundError, 404],
+  [AttorneyNotFoundError, 404],
   [SessionNotFoundError, 404],
   [TrialExhaustedError, 403],
+  [ConcurrentSessionError, 409],
 ]);
 
 export function handleApiError(err: unknown): NextResponse {

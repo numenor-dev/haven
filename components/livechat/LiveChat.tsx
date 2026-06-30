@@ -1,6 +1,6 @@
 'use client';
 
-import { useRef } from "react";
+import { useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { LiveSessionProps } from "@/types/types";
 import useLiveSession from "./hooks/useLiveSession";
@@ -16,7 +16,14 @@ export default function LiveChat({ firm }: LiveSessionProps) {
     const firmName = firm ? capitalizeName(firm) : null;
 
     const messagesEndRef = useRef<HTMLDivElement>(null);
+    const latestMessageRef = useRef<HTMLDivElement>(null);
     const inputRef = useRef<HTMLTextAreaElement>(null);
+
+    useEffect(() => {
+        if (latestMessageRef.current) {
+            latestMessageRef.current.scrollIntoView({ behavior: 'smooth'});
+        }
+    }, [messages])
 
     const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
         if (e.key === "Enter" && !e.shiftKey) {
@@ -67,8 +74,9 @@ export default function LiveChat({ firm }: LiveSessionProps) {
                             )}
 
                             <div
+                                ref={latestMessageRef}
                                 className={`max-w-[80%] rounded-2xl px-4 py-2.5 text-sm leading-relaxed ${message.role === "user"
-                                    ? "bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900 rounded-br-sm"
+                                    ? "bg-sky-900 dark:bg-zinc-100 text-white dark:text-zinc-900 rounded-br-sm"
                                     : "bg-zinc-50 dark:bg-sky-800 text-zinc-900 dark:text-zinc-100 rounded-bl-sm"
                                     }`}
                             >
@@ -86,7 +94,7 @@ export default function LiveChat({ firm }: LiveSessionProps) {
                     <motion.p
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
-                        className="text-xs text-center text-red-500 dark:text-red-400 py-2"
+                        className="text-sm text-center text-red-700 dark:text-red-500 py-2"
                     >
                         Something went wrong. Please refresh and try again.
                     </motion.p>
