@@ -15,7 +15,7 @@ import {
 import { useStream } from "../../hooks/useStream";
 
 
-export default function useLiveSession({ firm }: LiveSessionProps): LiveSessionReturn {
+export default function useLiveSession({ firm, clientName }: LiveSessionProps): LiveSessionReturn {
     const [status, setStatus] = useState<SessionStatus>("idle");
     const [messages, setMessages] = useState<Message[]>([]);
     const [sessionId, setSessionId] = useState<string | null>(null);
@@ -66,19 +66,18 @@ export default function useLiveSession({ firm }: LiveSessionProps): LiveSessionR
             const session = await res.json();
             setSessionId(session.id);
             setMessages([{ role: "assistant", content: "" }]);
-            startStream([], { firm, sessionId: session.id });
+            startStream([], { firm, clientName, sessionId: session.id });
         } catch (err) {
             setError(err instanceof Error ? err : new Error('Failed to start session'));
             setStatus("error");
         }
-    }, [status, firm, startStream]);
+    }, [status, firm, clientName, startStream]);
 
     useEffect(() => {
-        if (!hasStarted.current) {
-            hasStarted.current = true;
-            Promise.resolve().then(start);
-        }
-    }, [start]);
+        if (!clientName || !hasStarted.current) return;
+        hasStarted.current = true;
+        Promise.resolve().then(start);
+    }, [clientName, start]);
 
     const sendMessage = useCallback(
         (content: string) => {
@@ -89,9 +88,9 @@ export default function useLiveSession({ firm }: LiveSessionProps): LiveSessionR
 
             setMessages([...updatedHistory, { role: "assistant", content: "" }]);
             setStatus("streaming");
-            startStream(updatedHistory, { firm, sessionId });
+            startStream(updatedHistory, { firm, clientName, sessionId });
         },
-        [status, messages, firm, startStream, sessionId]
+        [status, messages, firm, clientName, startStream, sessionId]
     );
 
     return { status, messages, sessionId, sendMessage, cancel, error };

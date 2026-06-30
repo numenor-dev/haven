@@ -7,8 +7,13 @@ export type Message = {
     content: string
 }
 
+export type LiveChatProps = {
+    firm: string;
+}
+
 export type LiveSessionProps = {
     firm: string;
+    clientName: string | null;
 }
 
 export type DemoSessionProps = {
@@ -67,7 +72,7 @@ export type UseStreamProps = {
 
 export type StreamOptions =
     | { isDemo: true }
-    | { firm: string; sessionId: string | null }
+    | { firm: string; clientName: string; sessionId: string | null }
 
 export type UseStreamReturn = {
     startStream: (messageHistory: Message[], options: StreamOptions) => void;
@@ -91,4 +96,9 @@ export type DashboardHeaderProps = {
 export type DataPanelProps = {
     record: ChatRecordsData | null;
     userName: string | null;
+};
+
+export type FirmSummary = {
+  id: string;
+  firmName: string;
 };
