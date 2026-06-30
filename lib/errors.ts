@@ -37,12 +37,19 @@ export class ConcurrentSessionError extends AppError {
   }
 }
 
+export class ChatRecordNotFoundError extends AppError {
+  constructor(sessionId: string) {
+    super(`Chat record not found: ${sessionId}`)
+  }
+}
+
 const statusMap: Map<typeof AppError, number> = new Map([
   [FirmNotFoundError, 404],
   [AttorneyNotFoundError, 404],
   [SessionNotFoundError, 404],
   [TrialExhaustedError, 403],
   [ConcurrentSessionError, 409],
+  [ChatRecordNotFoundError, 404]
 ]);
 
 export function handleApiError(err: unknown): NextResponse {

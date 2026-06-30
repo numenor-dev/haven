@@ -31,6 +31,7 @@ export async function getFirmBySlug(slug: string): Promise<FirmSummary | null> {
   return firm ?? null;
 }
 
+
 export const getFirmNameForUser = cache(async(id: string): Promise<string | null> => {
   const [firm] = await db.select({ firmName: firms.firmName }).from(firms).where(eq(firms.id, id));
   return firm?.firmName ?? null;

@@ -6,16 +6,13 @@ import { LiveChatProps } from "@/types/types";
 import useLiveSession from "./hooks/useLiveSession";
 import StreamingIndicator from "../ui/loading";
 import { ArrowUpIcon, StopIcon } from "@heroicons/react/24/solid";
-import { capitalizeName } from "@/lib/utils";
 
-export default function LiveChat({ firm }: LiveChatProps) {
+export default function LiveChat({ slug, firmName }: LiveChatProps) {
 
-    const [clientName, setClientName] = useState<string | null>(null);
+    const [clientName, setClientName] = useState<string>('');
     const [nameInput, setNameInput] = useState("");
 
-    const { status, messages, sendMessage, cancel, error } = useLiveSession({ firm, clientName });
-
-    const firmName = firm ? capitalizeName(firm) : null;
+    const { status, messages, sendMessage, cancel, error } = useLiveSession({ slug, clientName });
 
     const messagesEndRef = useRef<HTMLDivElement>(null);
     const latestMessageRef = useRef<HTMLDivElement>(null);
@@ -82,7 +79,7 @@ export default function LiveChat({ firm }: LiveChatProps) {
                         <div className="flex items-center space-x-3 px-5 py-5 border-b border-zinc-200/30 dark:border-zinc-200/10">
                             <div className="w-2 h-2 rounded-full bg-emerald-300" />
                             <span className="text-sm font-bold">
-                                {firmName ?? firm}
+                                {firmName ?? slug}
                             </span>
                         </div>
 

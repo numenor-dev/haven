@@ -1,4 +1,4 @@
-import { chatSessions } from "@/lib/db/schema"
+import { chatSessions, chatRecords } from "@/lib/db/schema"
 
 export type SessionStatus = "idle" | "active" | "streaming" | "user_turn" | "complete" | "expired" | "error"
 
@@ -8,12 +8,13 @@ export type Message = {
 }
 
 export type LiveChatProps = {
-    firm: string;
+    slug: string;
+    firmName: string;
 }
 
 export type LiveSessionProps = {
-    firm: string;
-    clientName: string | null;
+    slug: string;
+    clientName: string;
 }
 
 export type DemoSessionProps = {
@@ -34,21 +35,16 @@ export type LiveSessionReturn = {
 
 export type ChatRecordsStatus = 'new' | 'reviewed'
 
-export type ChatRecordsListItem = {
-    id: string;
-    clientName: string | null;
-    status: ChatRecordsStatus;
-    createdAt: Date;
-};
+export type ChatRecord = typeof chatRecords.$inferSelect;
 
-export type ChatRecordsData = ChatRecordsListItem & {
-    sessionId: string;
-    pdfUrl: string | null;
-    updatedAt: Date | null;
-    completedAt: Date | null;
-    transcript: TranscriptMessage[];
-    structuredData: StructuredData | null;
-};
+export type ChatRecordsListItem = Pick<ChatRecord, 'id' | 'clientName' | 'status' | 'createdAt'>;
+
+export type ChatRecordsData = Pick<ChatRecord,
+  | 'id' | 'clientName' | 'status' | 'createdAt'
+  | 'sessionId' | 'pdfUrl' | 'updatedAt' | 'completedAt'
+  | 'transcript' | 'structuredData'
+>;
+
 export type DemoSessionReturn = {
     status: SessionStatus;
     messages: Message[];
@@ -72,7 +68,7 @@ export type UseStreamProps = {
 
 export type StreamOptions =
     | { isDemo: true }
-    | { firm: string; clientName: string; sessionId: string | null }
+    | { slug: string; sessionId: string | null }
 
 export type UseStreamReturn = {
     startStream: (messageHistory: Message[], options: StreamOptions) => void;
@@ -101,4 +97,16 @@ export type DataPanelProps = {
 export type FirmSummary = {
   id: string;
   firmName: string;
+};
+
+export type CreateChatRecord = {
+  sessionId: string;
+  firmId: string;
+  clientName: string;
+};
+
+export type CompleteChatRecord = {
+  transcript: TranscriptMessage[];
+  structuredData: StructuredData;
+  pdfUrl: string;
 };

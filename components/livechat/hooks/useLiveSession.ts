@@ -15,7 +15,7 @@ import {
 import { useStream } from "../../hooks/useStream";
 
 
-export default function useLiveSession({ firm, clientName }: LiveSessionProps): LiveSessionReturn {
+export default function useLiveSession({ slug, clientName }: LiveSessionProps): LiveSessionReturn {
     const [status, setStatus] = useState<SessionStatus>("idle");
     const [messages, setMessages] = useState<Message[]>([]);
     const [sessionId, setSessionId] = useState<string | null>(null);
@@ -58,7 +58,7 @@ export default function useLiveSession({ firm, clientName }: LiveSessionProps): 
             const res = await fetch('/api/chat/session', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ firmSlug: firm }),
+                body: JSON.stringify({ firmSlug: slug }),
             });
 
             if (!res.ok) throw new Error('Failed to create session');
@@ -66,12 +66,12 @@ export default function useLiveSession({ firm, clientName }: LiveSessionProps): 
             const session = await res.json();
             setSessionId(session.id);
             setMessages([{ role: "assistant", content: "" }]);
-            startStream([], { firm, clientName, sessionId: session.id });
+            startStream([], { slug, sessionId: session.id });
         } catch (err) {
             setError(err instanceof Error ? err : new Error('Failed to start session'));
             setStatus("error");
         }
-    }, [status, firm, clientName, startStream]);
+    }, [status, slug, startStream]);
 
     useEffect(() => {
         if (!clientName || !hasStarted.current) return;
@@ -88,9 +88,9 @@ export default function useLiveSession({ firm, clientName }: LiveSessionProps): 
 
             setMessages([...updatedHistory, { role: "assistant", content: "" }]);
             setStatus("streaming");
-            startStream(updatedHistory, { firm, clientName, sessionId });
+            startStream(updatedHistory, { slug, sessionId });
         },
-        [status, messages, firm, clientName, startStream, sessionId]
+        [status, messages, slug, startStream, sessionId]
     );
 
     return { status, messages, sessionId, sendMessage, cancel, error };

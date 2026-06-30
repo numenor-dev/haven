@@ -1,4 +1,5 @@
 import { db } from "@/lib/db/db";
+import { randomUUID } from "crypto";
 import { eq, sql, and } from "drizzle-orm";
 import {
   FirmNotFoundError,
@@ -7,6 +8,7 @@ import {
   SessionNotFoundError,
   ConcurrentSessionError
 } from '@/lib/errors';
+import { buildCreateChatRecordQuery } from "./chatRecords";
 import { chatSessions, attorneys } from "@/lib/db/schema";
 import { getFirmIdBySlug } from "@/lib/firm";
 import { ChatSession } from "@/types/types";
@@ -14,9 +16,13 @@ import { ChatSession } from "@/types/types";
 export const maxLiveTurns = 50;
 export const maxSessionDuration = 3600000;
 
-export async function createSession(firmSlug: string, attorneyId?: string): Promise<ChatSession> {
-  const firmId = await getFirmIdBySlug(firmSlug);
-  if (!firmId) throw new FirmNotFoundError(firmSlug);
+export async function createSession(
+  slug: string,
+  clientName: string,
+  attorneyId?: string
+): Promise<ChatSession> {
+  const firmId = await getFirmIdBySlug(slug);
+  if (!firmId) throw new FirmNotFoundError(slug);
 
   if (attorneyId) {
     const [attorney] = await db
@@ -28,16 +34,22 @@ export async function createSession(firmSlug: string, attorneyId?: string): Prom
     if (attorney.isTrialExhausted) throw new TrialExhaustedError();
 
     const [existingSession] = await db
-    .select({ id: chatSessions.id})
-    .from(chatSessions)
-    .where(and(
-      eq(chatSessions.attorneyId, attorneyId),
-      eq(chatSessions.status, 'active'),
-    ));
+      .select({ id: chatSessions.id })
+      .from(chatSessions)
+      .where(and(
+        eq(chatSessions.attorneyId, attorneyId),
+        eq(chatSessions.status, 'active'),
+      ));
     if (existingSession) throw new ConcurrentSessionError(attorneyId);
   }
 
-  const [session] = await db.insert(chatSessions).values({ firmId, attorneyId }).returning();
+  const sessionId = randomUUID();
+
+  const [[session]] = await db.batch([
+    db.insert(chatSessions).values({ id: sessionId, firmId, attorneyId }).returning(),
+    buildCreateChatRecordQuery({ sessionId, firmId, clientName }),
+  ]);
+
   return session;
 }
 

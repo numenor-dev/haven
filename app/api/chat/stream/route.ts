@@ -93,7 +93,7 @@ function buildStream(
 
 export async function POST(req: NextRequest) {
     const body = await req.json().catch(() => null);
-    const { sessionId, messages, firm, isDemo } = body ?? {};
+    const { sessionId, messages, slug, isDemo } = body ?? {};
 
     if (isDemo) {
         if (!Array.isArray(messages)) {
@@ -130,9 +130,11 @@ export async function POST(req: NextRequest) {
     if (!Array.isArray(messages)) {
         return jsonError('messages must be an array', 400);
     }
-    if (!firm || typeof firm !== 'string') {
-        return jsonError('firm is required for live sessions', 400);
+    if (!slug || typeof slug !== 'string') {
+        return jsonError('slug is required for live sessions', 400);
     }
+    // clientName is stored at session creation in chatRecords and is not needed each turn
+    // slug is validated above but not yet used. Reserved for per-firm prompt injection (V2)
 
     let session;
 
@@ -141,15 +143,20 @@ export async function POST(req: NextRequest) {
     } catch (err) {
         return handleApiError(err);
     }
+
     if (session.status === 'complete') {
         return jsonError('Session already complete', 409);
     }
+
     if (isSessionAtLimit(session)) {
-        await completeSession(session.id).catch((err =>
-            console.error('[stream route] session has hit max turns or max duration limit:', err)
-        ));
-        return jsonError('Apologies, this conversation has reached its limit. ' +
-            'Please complete the session and an attorney will reach out as soon as possible.', 410);
+        await completeSession(session.id).catch((err) =>
+            console.error('[stream route] completeSession failed on limit hit:', err)
+        );
+        return jsonError(
+            'It looks this conversation has reached its limit. ' +
+            'Please complete the session and an attorney will reach out as soon as possible.',
+            410
+        );
     }
 
     try {
