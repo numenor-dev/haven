@@ -10,7 +10,8 @@ export default function Expectations() {
                 · Should only take about 15 minutes. <br />
                 · There are no right or wrong answers. <br />
                 · Please explain your situation in your own words. <br />
-                · Responses are confidential and shared only with your attorney. 
+                · Responses are confidential and shared only with your attorney. <br />
+                · All communication in this conversation is not legal advice.
             </p>
         </div>
     )

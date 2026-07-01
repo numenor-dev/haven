@@ -21,7 +21,7 @@ export default async function ClientPage({ params }: { params: Promise<{ slug: s
                     Welcome to {firm.firmName}
                 </h1>
             </div>
-            <div className="flex flex-col mx-auto gap-y-10 md:grid md:grid-cols-[4fr_6fr] md:gap-x-8 px-10 max-w-7xl">
+            <div className="flex flex-col mx-auto gap-y-10 md:grid md:grid-cols-[5fr_5fr] md:gap-x-8 px-7 max-w-7xl">
                 <Expectations />
                 <LiveChat slug={slug} firmName={firm.firmName} />
             </div>

@@ -47,7 +47,7 @@ export default function Hero() {
                 The Intelligent Intake Workflow
             </h1>
             <p className="text-white dark:text-zinc-200 text-xl max-w-sm md:max-w-lg text-center">
-                Safe and efficient client intake that helps legal teams hit the ground running with potential clients
+                Safe and efficient client onboarding that helps legal teams hit the ground running with potential clients
             </p>
             <form
                 noValidate

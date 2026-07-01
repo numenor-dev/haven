@@ -31,7 +31,7 @@ export default function Explainer() {
                     initial={{ opacity: 0, y: 20 }}
                     animate={inView ? { opacity: 1, y: 0 } : { opacity: 0, y: 12 }}
                     transition={{ duration: 1, ease: "easeOut" }}>
-                    Intake Automated
+                    Onboarding Automated
                 </motion.h2>
                 <motion.p
                     initial={{ opacity: 0, y: 12 }}

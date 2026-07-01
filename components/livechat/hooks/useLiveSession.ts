@@ -22,6 +22,7 @@ export default function useLiveSession({ slug, clientName }: LiveSessionProps): 
     const [error, setError] = useState<Error | null>(null);
 
     const hasStarted = useRef(false);
+    const statusRef = useRef<SessionStatus>("idle");
 
     const appendToLastMessage = useCallback((text: string) => {
         setMessages((prev) => {
@@ -35,15 +36,14 @@ export default function useLiveSession({ slug, clientName }: LiveSessionProps): 
         });
     }, []);
 
-    const { startStream, cancelStream } = useStream({
-        onChunk: appendToLastMessage,
-        onComplete: () => setStatus("user_turn"),
-        onError: (error) => {
-            console.error("[useLiveSession] Stream error:", error);
-            setError(error);
-            setStatus("error");
-        },
-    });
+    const onComplete = useCallback(() => setStatus("user_turn"), []);
+    const onError = useCallback((error: Error) => {
+        console.error("[useLiveSession] Stream error:", error);
+        setError(error);
+        setStatus("error");
+    }, []);
+
+    const { startStream, cancelStream } = useStream({ onChunk: appendToLastMessage, onComplete, onError });
 
     const cancel = useCallback(() => {
         cancelStream();
@@ -51,14 +51,14 @@ export default function useLiveSession({ slug, clientName }: LiveSessionProps): 
     }, [cancelStream, status]);
 
     const start = useCallback(async () => {
-        if (status !== "idle") return;
+        if (statusRef.current !== "idle") return;
         setStatus("streaming");
 
         try {
             const res = await fetch('/api/chat/session', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ firmSlug: slug }),
+                body: JSON.stringify({ slug, clientName }),
             });
 
             if (!res.ok) throw new Error('Failed to create session');
@@ -71,12 +71,12 @@ export default function useLiveSession({ slug, clientName }: LiveSessionProps): 
             setError(err instanceof Error ? err : new Error('Failed to start session'));
             setStatus("error");
         }
-    }, [status, slug, startStream]);
+    }, [slug, clientName, startStream]);
 
     useEffect(() => {
-        if (!clientName || !hasStarted.current) return;
+        if (!clientName || hasStarted.current) return;
         hasStarted.current = true;
-        Promise.resolve().then(start);
+        start();
     }, [clientName, start]);
 
     const sendMessage = useCallback(
