@@ -4,12 +4,17 @@ import { useRef } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { DemoSessionProps } from "@/types/types";
 import useDemoSession from "./hooks/useDemoSession";
+import { useTypewriter } from "../hooks/useTypewriter";
 import StreamingIndicator from "../ui/loading";
 import { ArrowUpIcon, StopIcon } from "@heroicons/react/24/solid";
 
+function AssistantMessage({ content }: { content: string }) {
+    const displayed = useTypewriter(content);
+    return <span>{displayed}</span>
+}
 
 export default function DemoChat({ isActive }: DemoSessionProps) {
-    const { status, messages, sendMessage, cancel, error, reset } = useDemoSession({ isActive });
+    const { status, messages, sendMessage, cancel, error } = useDemoSession({ isActive });
 
     const messagesEndRef = useRef<HTMLDivElement>(null);
     const inputRef = useRef<HTMLTextAreaElement>(null);
@@ -72,8 +77,12 @@ export default function DemoChat({ isActive }: DemoSessionProps) {
                                     }`}
                             >
                                 {/* Show streaming indicator on empty assistant message */}
-                                {message.role === "assistant" && message.content === "" ? (
-                                    <StreamingIndicator />
+                                {message.role === "assistant" ? (
+                                    message.content === "" ? (
+                                        <StreamingIndicator />
+                                    ) : (
+                                        <AssistantMessage content={message.content} />
+                                    )
                                 ) : (
                                     message.content
                                 )}

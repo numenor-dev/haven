@@ -4,7 +4,9 @@ import { chatRecords } from "@/lib/db/schema";
 import {
     CreateChatRecord,
     CompleteChatRecord,
-    ChatRecord
+    ChatRecord,
+    StructuredData,
+    TranscriptMessage
 } from "@/types/types";
 import { ChatRecordNotFoundError } from "@/lib/errors";
 
@@ -34,4 +36,18 @@ export async function completeChatRecord(
     .returning();
   if (!updated) throw new ChatRecordNotFoundError(sessionId);
   return updated;
+}
+
+export async function updateChatRecord(
+    sessionId: string,
+    structuredData: StructuredData,
+    transcript: TranscriptMessage[]
+): Promise<ChatRecord> {
+    const [updated] = await db
+        .update(chatRecords)
+        .set({ structuredData, transcript, completedAt: new Date() })
+        .where(eq(chatRecords.sessionId, sessionId))
+        .returning();
+    if (!updated) throw new ChatRecordNotFoundError(sessionId);
+    return updated;
 }

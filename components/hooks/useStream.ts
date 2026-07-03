@@ -8,7 +8,8 @@ import {
     parseSSELine,
     getTextDelta,
     isMessageStop,
-    isStreamError
+    isStreamError,
+    isSessionComplete
 } from "@/lib/streaming";
 import {
     Message,
@@ -17,7 +18,7 @@ import {
     UseStreamReturn
 } from "@/types/types";
 
-export function useStream({ onChunk, onComplete, onError }: UseStreamProps): UseStreamReturn {
+export function useStream({ onChunk, onComplete, onSessionComplete, onError }: UseStreamProps): UseStreamReturn {
     const abortControllerRef = useRef<AbortController | null>(null);
     const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
     const isTimedOut = useRef(false);
@@ -26,7 +27,7 @@ export function useStream({ onChunk, onComplete, onError }: UseStreamProps): Use
         async (messageHistory: Message[], options: StreamOptions) => {
             isTimedOut.current = false;
             abortControllerRef.current?.abort();
-            clearTimeout(timeoutRef.current!);
+            if (timeoutRef.current) clearTimeout(timeoutRef.current);
 
             abortControllerRef.current = new AbortController();
             timeoutRef.current = setTimeout(() => {
@@ -83,9 +84,14 @@ export function useStream({ onChunk, onComplete, onError }: UseStreamProps): Use
                             if (isMessageStop(chunk)) {
                                 completed = true;
                                 onComplete();
+                            }
+
+                            if (isSessionComplete(chunk)) {
+                                completed = true;
+                                onSessionComplete();
                                 return;
                             }
-                            // parseSSELine handles JSON parse errors internally and this catches unexpected throws
+                           
                         } catch {
                             if (process.env.NODE_ENV === 'development') {
                                 console.warn('[useStream] Failed to parse SSE line:', line);
@@ -96,7 +102,6 @@ export function useStream({ onChunk, onComplete, onError }: UseStreamProps): Use
 
                 if (!completed) onComplete();
             } catch (error) {
-                reader?.cancel();
                 if (error instanceof DOMException && error.name === 'AbortError') {
                     if (isTimedOut.current) {
                         isTimedOut.current = false;
@@ -108,12 +113,12 @@ export function useStream({ onChunk, onComplete, onError }: UseStreamProps): Use
                 console.error('[useStream] Stream error:', error);
                 onError(error instanceof Error ? error : new Error(String(error)));
             } finally {
-                clearTimeout(timeoutRef.current!);
+                if (timeoutRef.current) clearTimeout(timeoutRef.current);
                 timeoutRef.current = null;
                 reader?.cancel().catch(() => { });
             }
         },
-        [onChunk, onComplete, onError]
+        [onChunk, onComplete, onSessionComplete, onError]
     );
 
     const cancelStream = useCallback(() => {

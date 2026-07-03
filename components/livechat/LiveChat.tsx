@@ -53,6 +53,8 @@ export default function LiveChat({ slug, firmName }: LiveChatProps) {
         setClientName(trimmed);
     };
 
+    console.log('The error is:', error);
+
     return (
         <AnimatePresence mode="wait">
             {!clientName ? (

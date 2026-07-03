@@ -84,12 +84,12 @@ export default function Onboarding({ className }: React.ComponentProps<"div">) {
                                                 slugStatus?.available ? (
                                                     <>
                                                         <CheckCircleIcon className="size-4 shrink-0" />
-                                                        gohaven.com/live/{slugStatus.slug}
+                                                        <span>Your custom URL is: gohaven.com/live/{slugStatus.slug}</span>Y
                                                     </>
                                                 ) : slugStatus ? (
                                                     <>
                                                         <XCircleIcon className="size-4 shrink-0" />
-                                                        It looks like {slugStatus.slug} is taken. Please try a more specific name.
+                                                        <span>It looks like {slugStatus.slug} is taken. Please try a more specific name.</span>
                                                     </>
                                                 ) : null}
                                         </p>
