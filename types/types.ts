@@ -84,7 +84,9 @@ export type TranscriptMessage = {
 };
 
 export type DashboardHeaderProps = {
-    firmName: string | null;
+    firmName: string;
+    slug: string;
+    trialStatus: boolean;
 }
 
 export type DataPanelProps = {

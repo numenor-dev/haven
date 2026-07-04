@@ -8,8 +8,8 @@ export class AppError extends Error {
 }
 
 export class FirmNotFoundError extends AppError {
-  constructor(slug: string) {
-    super(`No firm found for slug: ${slug}`);
+  constructor(id: string) {
+    super(`No firm found for ${id}`);
   }
 }
 

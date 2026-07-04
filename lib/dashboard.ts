@@ -1,7 +1,11 @@
 import 'server-only';
 import { db } from "./db/db";
 import { cache } from "react";
-import { chatSessions, chatRecords, attorneys } from "./db/schema";
+import {
+    chatSessions,
+    chatRecords,
+    attorneys
+} from "./db/schema";
 import { eq, desc, and } from "drizzle-orm";
 import {
     Message,

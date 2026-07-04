@@ -289,8 +289,6 @@ function jsonError(message: string, status: number): Response {
 
 // Hook fires after message_stop, before controller.close().
 // This is the only window where the hook can emit additional SSE events to the client.
-
-
 function buildStream(
     stream: ReturnType<typeof anthropic.messages.stream>,
     onMessageStop?: CompleteHook,

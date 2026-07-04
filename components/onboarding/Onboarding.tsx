@@ -29,8 +29,10 @@ export default function Onboarding({ className }: React.ComponentProps<"div">) {
 
     useEffect(() => {
         latestInput.current = firmName;
-        // eslint-disable-next-line react-hooks/set-state-in-effect
-        if (!firmName.trim()) return setSlugStatus(null);
+        if (!firmName.trim()) {
+            // eslint-disable-next-line react-hooks/set-state-in-effect
+            setSlugStatus(null);
+        }
 
         const timeout = setTimeout(() => {
             startTransition(async () => {
@@ -84,7 +86,7 @@ export default function Onboarding({ className }: React.ComponentProps<"div">) {
                                                 slugStatus?.available ? (
                                                     <>
                                                         <CheckCircleIcon className="size-4 shrink-0" />
-                                                        <span>Your custom URL is: gohaven.com/live/{slugStatus.slug}</span>Y
+                                                        <span>Your custom URL is: gohaven.com/live/{slugStatus.slug}</span>
                                                     </>
                                                 ) : slugStatus ? (
                                                     <>

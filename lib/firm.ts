@@ -1,8 +1,9 @@
 import { db } from "./db/db";
 import { cache } from "react";
-import { firms } from "./db/schema";
+import { firms, attorneys } from "./db/schema";
 import { eq } from "drizzle-orm";
 import { FirmSummary } from "@/types/types";
+import { FirmNotFoundError } from "./errors";
 
 export function slugify(name: string): string {
   return name
@@ -32,7 +33,22 @@ export async function getFirmBySlug(slug: string): Promise<FirmSummary | null> {
 }
 
 
-export const getFirmNameForUser = cache(async(id: string): Promise<string | null> => {
-  const [firm] = await db.select({ firmName: firms.firmName }).from(firms).where(eq(firms.id, id));
-  return firm?.firmName ?? null;
-})
+export const getFirmDataForUser = cache(async (userId: string): Promise<{
+    id: string;
+    name: string;
+    slug: string;
+    isTrialExhausted: boolean;
+}> => {
+    const [firm] = await db
+        .select({
+            id: firms.id,
+            name: firms.firmName,
+            slug: firms.slug,
+            isTrialExhausted: attorneys.isTrialExhausted,
+        })
+        .from(firms)
+        .innerJoin(attorneys, eq(attorneys.firmId, firms.id))
+        .where(eq(attorneys.neonAuthUserId, userId));
+    if (!firm) throw new FirmNotFoundError(userId);
+    return firm;
+});
