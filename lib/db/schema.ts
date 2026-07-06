@@ -20,6 +20,8 @@ export const firms = pgTable('firms', {
   slug: text('slug').notNull().unique(),
   logoUrl: text('logo_url'),
   trialUsed: boolean('trial_used').notNull().default(false),
+  hasActiveSubscription: boolean('has_active_subscription').notNull().default(false),
+  notificationEmail: text('notification_email').notNull(),
   createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
   updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow().$onUpdate(() => new Date()),
 });

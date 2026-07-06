@@ -1,5 +1,5 @@
 import { auth } from '@/lib/auth/server';
-import { getFirmDataForUser } from '@/lib/firm';
+import { getFirmDataByUser } from '@/lib/firm';
 import { getFirmChatRecords, getChatRecordsById } from '@/lib/dashboard';
 import ClientListWrapper from '@/components/dashboard/ClientListWrapper';
 import DataPanel from '@/components/dashboard/DataPanel';
@@ -10,7 +10,7 @@ searchParams,
     searchParams: Promise<{ chat?: string }>;
 }) {
     const { data: session } = await auth.getSession();
-    const { id: firmId } = await getFirmDataForUser(session!.user.id);
+    const { id: firmId } = await getFirmDataByUser(session!.user.id);
 
     const { chat: selectedChatId } = await searchParams;
 

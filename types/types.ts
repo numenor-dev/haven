@@ -97,6 +97,9 @@ export type DataPanelProps = {
 export type FirmSummary = {
     id: string;
     firmName: string;
+    slug: string;
+    trialUsed: boolean;
+    activeSubscription: boolean;
 };
 
 export type CreateChatRecord = {

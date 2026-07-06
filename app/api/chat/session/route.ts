@@ -1,10 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { eq } from 'drizzle-orm';
-import { auth } from '@/lib/auth/server';
 import { db } from '@/lib/db/db';
-import { attorneys, firms } from '@/lib/db/schema';
+import { firms } from '@/lib/db/schema';
 import {
-    handleApiError
+    handleApiError,
+    TrialExhaustedError,
+    FirmNotFoundError
 } from '@/lib/errors';
 import {
     createSession,
@@ -26,22 +27,25 @@ export async function POST(req: NextRequest) {
     }
 
     try {
-        let attorneyId: string | undefined;
+        const [firm] = await db
+            .select({ 
+                id: firms.id, 
+                slug: firms.slug, 
+                isTrialUsed: firms.trialUsed,
+                activeSubscription: firms.hasActiveSubscription
+            })
+            .from(firms)
+            .where(eq(firms.slug, slug));
 
-        const { data: authSession } = await auth.getSession();
-        if (authSession?.user) {
-            const [attorney] = await db
-                .select({ id: attorneys.id, slug: firms.slug })
-                .from(attorneys)
-                .innerJoin(firms, eq(attorneys.firmId, firms.id))
-                .where(eq(attorneys.neonAuthUserId, authSession.user.id));
-
-            if (attorney && attorney.slug === slug) {
-                attorneyId = attorney.id;
-            }
+        if (!firm) {
+            throw new FirmNotFoundError(slug);
         }
 
-        const session = await createSession(slug, clientName, attorneyId);
+        if (firm.isTrialUsed && !firm.activeSubscription) {
+            throw new TrialExhaustedError();
+        }
+
+        const session = await createSession(slug, clientName);
         return NextResponse.json(session, { status: 201 });
     } catch (err) {
         return handleApiError(err);

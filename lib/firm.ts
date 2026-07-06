@@ -24,31 +24,33 @@ export async function getFirmIdBySlug(slug: string): Promise<string | null> {
   return firm?.id ?? null;
 }
 
-export async function getFirmBySlug(slug: string): Promise<FirmSummary | null> {
+export const getFirmDataBySlug = cache(async (slug: string): Promise<FirmSummary> => {
   const [firm] = await db
-    .select({ id: firms.id, firmName: firms.firmName })
+    .select({
+      id: firms.id,
+      firmName: firms.firmName,
+      slug: firms.slug,
+      trialUsed: firms.trialUsed,
+      activeSubscription: firms.hasActiveSubscription
+    })
     .from(firms)
     .where(eq(firms.slug, slug));
-  return firm ?? null;
-}
+  if (!firm.firmName) throw new FirmNotFoundError(firm.firmName);
+  return firm;
+});
 
-
-export const getFirmDataForUser = cache(async (userId: string): Promise<{
-    id: string;
-    name: string;
-    slug: string;
-    isTrialExhausted: boolean;
-}> => {
-    const [firm] = await db
-        .select({
-            id: firms.id,
-            name: firms.firmName,
-            slug: firms.slug,
-            isTrialExhausted: attorneys.isTrialExhausted,
-        })
-        .from(firms)
-        .innerJoin(attorneys, eq(attorneys.firmId, firms.id))
-        .where(eq(attorneys.neonAuthUserId, userId));
-    if (!firm) throw new FirmNotFoundError(userId);
-    return firm;
+export const getFirmDataByUser = cache(async (userId: string): Promise<FirmSummary> => {
+  const [firm] = await db
+    .select({
+      id: firms.id,
+      firmName: firms.firmName,
+      slug: firms.slug,
+      trialUsed: firms.trialUsed,
+      activeSubscription: firms.hasActiveSubscription
+    })
+    .from(firms)
+    .innerJoin(attorneys, eq(attorneys.firmId, firms.id))
+    .where(eq(attorneys.neonAuthUserId, userId));
+  if (!firm) throw new FirmNotFoundError(userId);
+  return firm;
 });
