@@ -18,8 +18,8 @@ export const firms = pgTable('firms', {
   id: uuid('id').primaryKey().defaultRandom(),
   firmName: text('firm_name').notNull(),
   slug: text('slug').notNull().unique(),
-  notificationEmail: text('notification_email').notNull(),
   logoUrl: text('logo_url'),
+  trialUsed: boolean('trial_used').notNull().default(false),
   createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
   updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow().$onUpdate(() => new Date()),
 });
@@ -28,7 +28,6 @@ export const attorneys = pgTable('attorneys', {
   id: uuid('id').primaryKey().defaultRandom(),
   neonAuthUserId: text('neon_auth_user_id').notNull().unique(),
   firmId: uuid('firm_id').notNull().references(() => firms.id),
-  isTrialExhausted: boolean('is_trial_exhausted').notNull().default(false),
   createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
   updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow().$onUpdate(() => new Date()),
 }, (table) => [
