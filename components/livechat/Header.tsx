@@ -3,9 +3,9 @@ import Link from "next/link";
 
 const links = [
     {
-        label: "Select Law Group",
-        href: "https://www.selectlawgroup.com/",
-        aria: "Select Law Group"
+        label: "WA State Personal Injury Laws",
+        href: "https://russellandhill.com/blog/washington-state-personal-injury-laws/",
+        aria: "Washington State Personal Injury Laws"
     },
     {
         label: "Personal Injury 101",

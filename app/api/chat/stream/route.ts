@@ -1,5 +1,6 @@
 import { NextRequest } from 'next/server';
 import Anthropic from '@anthropic-ai/sdk';
+import { after } from 'next/server';
 import {
     getSession,
     incrementTurn,
@@ -42,7 +43,7 @@ contextually appropriate questions depending on their first answer. Never ask mo
 questions. Never use special characters, emojis, or em dashes in any circumstance. The 5th question should
 always be as follows: "Have you spoken to an attorney yet?"
 
-Introduction: "Hello and welcome to Select Law Group! Thank you for reaching out to us."
+Introduction: "Hello and welcome to The Law Group! Thank you for reaching out to us."
 
 Initial question: "How can we help you?"
 
@@ -297,14 +298,19 @@ function buildStream(
         async start(controller) {
             const encoder = new TextEncoder();
             let inToolBlock = false;
+            let isClientConnected = true;
+
+            const safeEnqueue = (data: string) => {
+                if (!isClientConnected) return;
+                try {
+                    controller.enqueue(encoder.encode(data));
+                } catch {
+                    isClientConnected = false;
+                }
+            };
 
             try {
                 for await (const chunk of stream) {
-                    // Track tool_use block boundaries.
-                    // Tool blocks are processed server-side only and filter them from the
-                    // client stream to avoid sending large JSON payloads and keep the
-                    // SSE protocol clean. The SDK still accumulates them internally for
-                    // stream.finalMessage(), which the completionHook reads.
                     if (chunk.type === 'content_block_start') {
                         if (chunk.content_block.type === 'tool_use') {
                             inToolBlock = true;
@@ -316,23 +322,27 @@ function buildStream(
                         continue;
                     }
 
-                    controller.enqueue(encoder.encode(`data: ${JSON.stringify(chunk)}\n\n`));
-                    if (chunk.type === 'message_stop') break;
+                    safeEnqueue(`data: ${JSON.stringify(chunk)}\n\n`);
+
+                    if (chunk.type === 'message_stop') {
+                        inToolBlock = false;
+                    }
                 }
 
                 // Loop has exited after message_stop. Controller is still open.
                 // Run the completion hook before finally closes it.
                 if (onMessageStop) await onMessageStop(controller, encoder);
 
+                if (isClientConnected) {
+                    try { controller.close(); } catch { }
+                }
+
             } catch (streamError) {
                 console.error('[stream route] Stream error:', streamError);
-                controller.enqueue(
-                    encoder.encode(
-                        `data: ${JSON.stringify({ type: 'error', error: 'Stream interrupted' })}\n\n`
-                    )
-                );
-            } finally {
-                controller.close();
+                if (isClientConnected) {
+                    safeEnqueue(`data: ${JSON.stringify({ type: 'error', error: 'Stream interrupted' })}\n\n`);
+                    try { controller.error(streamError); } catch { }
+                }
             }
         },
     });
@@ -415,10 +425,11 @@ export async function POST(req: NextRequest) {
         });
 
         stream.on('message', (message) => {
-            incrementTurn(session.id).catch((err) =>
+            const promise = incrementTurn(session.id).catch((err) =>
                 console.error('[stream route] incrementTurn failed:', err)
             );
             console.log('[Anthropic usage] live:', message.usage);
+            after(() => promise);
         });
 
         const completeHook: CompleteHook = async (controller, encoder) => {
@@ -450,15 +461,18 @@ export async function POST(req: NextRequest) {
                 await updateChatRecord(session.id, toolBlock.input as StructuredData, completeTranscript);
                 await completeSession(session.id);
 
-                controller.enqueue(
-                    encoder.encode(
-                        `data: ${JSON.stringify({ type: 'session_complete' })}\n\n`
-                    )
-                );
+                try {
+                    controller.enqueue(
+                        encoder.encode(
+                            `data: ${JSON.stringify({ type: 'session_complete' })}\n\n`
+                        )
+                    );
+                } catch {
+                    // Ignore: The database saved successfully, but the client already left.
+                }
             } catch (err) {
                 console.error('[stream route] Completion pipeline failed:', err);
                 // Session remains active if this fails.
-                // Attorney can manually close from dashboard if needed.
             }
         };
 

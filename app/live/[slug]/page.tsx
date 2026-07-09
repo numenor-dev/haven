@@ -19,7 +19,6 @@ export default async function ClientPage({ params }: { params: Promise<{ slug: s
 
     const { data: session } = await auth.getSession();
     
-    // 2. Default to false, only check ownership if a user is actively logged in
     let isOwner = false;
     if (session?.user?.id) {
         const userFirmId = await getFirmIdForUser(session.user.id);

@@ -4,21 +4,15 @@ import { useRef, useEffect, useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { LiveChatProps } from "@/types/types";
 import useLiveSession from "./hooks/useLiveSession";
-import { useTypewriter } from "../hooks/useTypewriter";
 import StreamingIndicator from "../ui/loading";
 import { ArrowUpIcon, StopIcon } from "@heroicons/react/24/solid";
-
-function AssistantMessage({ content }: { content: string }) {
-    const displayed = useTypewriter(content);
-    return <span>{displayed}</span>
-}
 
 export default function LiveChat({ slug, firmName }: LiveChatProps) {
 
     const [clientName, setClientName] = useState<string>('');
     const [nameInput, setNameInput] = useState("");
 
-    const { status, messages, sendMessage, cancel, error } = useLiveSession({ slug, clientName });
+    const { status, messages, sendMessage, manualEndSession, textRef, cancel, error } = useLiveSession({ slug, clientName });
 
     const messagesEndRef = useRef<HTMLDivElement>(null);
     const inputRef = useRef<HTMLTextAreaElement>(null);
@@ -53,16 +47,14 @@ export default function LiveChat({ slug, firmName }: LiveChatProps) {
         setClientName(trimmed);
     };
 
-    console.log('The error is:', error);
-
     return (
         <AnimatePresence mode="wait">
             {!clientName ? (
                 <motion.form
                     key="name-gate"
                     onSubmit={handleSubmit}
-                    exit={{ opacity: 0, x: -80 }}
-                    transition={{ duration: 0.4, ease: "easeInOut" }}
+                    exit={{ opacity: 0, x: -25 }}
+                    transition={{ duration: 0.5, ease: "easeInOut" }}
                     className="h-150 flex flex-col"
                 >
                     <label
@@ -75,8 +67,8 @@ export default function LiveChat({ slug, firmName }: LiveChatProps) {
                         id="client-name"
                         value={nameInput}
                         onChange={(e) => setNameInput(e.target.value)}
-                        className="w-full h-12 pl-5 border border-zinc-50 focus:border-zinc-100 
-                        dark:border-zinc-400 dark:focus:border-zinc-300 text-white dark:text-zinc-300 rounded-3xl"
+                        className="w-full h-10 pl-5 border border-zinc-50 focus:border-zinc-100 
+                        dark:border-zinc-400 dark:focus:border-zinc-300 text-white dark:text-zinc-300 rounded-xl"
                     />
                     <button
                         type="submit"
@@ -95,12 +87,20 @@ export default function LiveChat({ slug, firmName }: LiveChatProps) {
                     <div className="flex flex-col w-full max-w-2xl mx-auto h-150 rounded-2xl border border-zinc-50 dark:border-zinc-50/50 overflow-hidden shadow-2xl">
 
                         {/* Header */}
-                        <div className="flex items-center space-x-3 px-5 py-5 border-b border-zinc-200/30 dark:border-zinc-200/10">
+                        <div className="flex items-center space-x-3 px-5 py-5 border-b border-zinc-200/40 dark:border-zinc-200/20">
                             <div className="w-2 h-2 rounded-full bg-emerald-300" />
                             <span className="text-sm font-bold">
                                 {firmName ?? slug}
                             </span>
+                            <button
+                                disabled={status === "complete"}
+                                onClick={manualEndSession}
+                                aria-label="End chat"
+                                className="px-5 py-1 ml-auto text-xs rounded-3xl bg-red-700/70 dark:bg-red-800 cursor-pointer">
+                                End Chat
+                            </button>
                         </div>
+
 
                         {/* Message thread */}
                         <div className="flex-1 overflow-y-auto px-5 py-7 space-y-4 scroll-smooth">
@@ -116,7 +116,7 @@ export default function LiveChat({ slug, firmName }: LiveChatProps) {
                                         {/* Assistant avatar */}
                                         {message.role === "assistant" && (
                                             <div className="w-7 h-7 rounded-full bg-zinc-100 dark:bg-sky-800 flex items-center justify-center mr-2.5 mt-0.5 shrink-0">
-                                                <span className="text-[10px] font-semibold text-zinc-800 dark:text-zinc-50">H</span>
+                                                <span className="text-[10px] font-semibold text-zinc-800 dark:text-zinc-50">{firmName[0]}</span>
                                             </div>
                                         )}
 
@@ -126,14 +126,19 @@ export default function LiveChat({ slug, firmName }: LiveChatProps) {
                                                 : "bg-zinc-50 dark:bg-sky-800 text-zinc-900 dark:text-zinc-100 rounded-bl-sm"
                                                 }`}
                                         >
+                                            {/* Show streaming indicator on empty assistant message */}
                                             {message.role === "assistant" ? (
-                                                message.content === "" ? (
-                                                    <StreamingIndicator />
+                                                status === "streaming" && i === messages.length - 1 ? (
+                                                    message.content === "" ? (
+                                                        <StreamingIndicator />
+                                                    ) : (
+                                                        <span ref={textRef} />
+                                                    )
                                                 ) : (
-                                                    <AssistantMessage content={message.content} />
+                                                    <span>{message.content}</span>
                                                 )
                                             ) : (
-                                                message.content
+                                                <span>{message.content}</span>
                                             )}
                                         </div>
                                     </motion.div>
@@ -179,15 +184,16 @@ export default function LiveChat({ slug, firmName }: LiveChatProps) {
                                     onKeyDown={handleKeyDown}
                                     className="flex-1 bg-transparent resize-none text-sm text-zinc-800 dark:text-zinc-100 placeholder:text-zinc-700 dark:placeholder:text-zinc-300 outline-none disabled:cursor-not-allowed min-h-6 max-h-32 leading-6"
                                 />
-                                {status === "streaming" ? (
-                                    <button
-                                        onClick={cancel}
-                                        aria-label="Stop response"
-                                        className="shrink-0 w-7 h-7 rounded-lg flex items-center justify-center bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900 hover:opacity-80 transition-opacity duration-200"
-                                    >
-                                        <StopIcon className="size-4" />
-                                    </button>
-                                ) : (
+                                <div className="flex mx-auto space-x-1">
+                                    {status === "streaming" &&
+                                        <button
+                                            onClick={cancel}
+                                            aria-label="Stop response"
+                                            className="shrink-0 w-7 h-7 rounded-lg flex items-center justify-center bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900 hover:opacity-80 transition-opacity duration-200"
+                                        >
+                                            <StopIcon className="size-4" />
+                                        </button>
+                                    }
                                     <button
                                         onClick={handleSend}
                                         disabled={status !== "user_turn"}
@@ -196,7 +202,7 @@ export default function LiveChat({ slug, firmName }: LiveChatProps) {
                                     >
                                         <ArrowUpIcon className="size-4" />
                                     </button>
-                                )}
+                                </div>
                             </div>
                         </div>
                     </div>

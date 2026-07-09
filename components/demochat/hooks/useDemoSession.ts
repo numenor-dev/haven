@@ -11,12 +11,17 @@ import {
     DemoSessionReturn
 } from "@/types/types";
 import { useStream } from "../../hooks/useStream";
+import { useSmoothChat } from "@/components/hooks/useSmoothChat";
 
 
 export default function useDemoSession({ isActive }: DemoSessionProps): DemoSessionReturn {
     const [status, setStatus] = useState<SessionStatus>("idle");
     const [messages, setMessages] = useState<Message[]>([]);
     const [error, setError] = useState<Error | null>(null);
+
+ const { textRef, enqueue, reset } = useSmoothChat(() => {
+        setStatus('user_turn');
+    })
 
     const appendToLastMessage = useCallback((text: string) => {
         setMessages((prev) => {
@@ -30,14 +35,24 @@ export default function useDemoSession({ isActive }: DemoSessionProps): DemoSess
         });
     }, []);
 
+    const onChunk = useCallback((delta: string) => {
+        enqueue(delta);
+        appendToLastMessage(delta);
+    }, [enqueue, appendToLastMessage])
+    
+    const onError = useCallback((error: Error) => {
+        console.error('[useLiveSession] Stream error:', error);
+        setError(error);
+        setStatus('error');
+    }, []);
+
+    const onSessionComplete = useCallback(() => setStatus('complete'), []);
+
     const { startStream, cancelStream } = useStream({
-        onChunk: appendToLastMessage,
+        onChunk,
         onComplete: () => setStatus("user_turn"),
-        onError: (error) => {
-            console.error("[useDemoSession] Stream error:", error);
-            setError(error);
-            setStatus("error");
-        },
+        onError,
+        onSessionComplete
     });
 
     const cancel = useCallback(() => {
@@ -77,18 +92,11 @@ export default function useDemoSession({ isActive }: DemoSessionProps): DemoSess
 
             setMessages([...updatedHistory, { role: "assistant", content: "" }]);
             setStatus("streaming");
+            reset();
             startStream(updatedHistory, { isDemo: true });
         },
-        [status, messages, startStream]
+        [status, messages, startStream, reset]
     );
 
-    const reset = useCallback(() => {
-        cancelStream();
-        setStatus("idle");
-        setMessages([]);
-        setError(null);
-        hasStarted.current = false;
-    }, [cancelStream]);
-
-    return { status, messages, sendMessage, cancel, error, reset };
+    return { status, messages, sendMessage, textRef, cancel, error, reset };
 }

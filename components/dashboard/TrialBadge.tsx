@@ -1,3 +1,5 @@
+import { ArrowLeftIcon } from "@heroicons/react/24/solid";
+
 
 export default function TrialBadge({ isTrialExhausted }: { isTrialExhausted: boolean }) {
     if (!isTrialExhausted) {
@@ -7,8 +9,8 @@ export default function TrialBadge({ isTrialExhausted }: { isTrialExhausted: boo
                              bg-emerald-50 text-emerald-700
                              dark:bg-emerald-950/50 dark:text-emerald-400
                              ring-1 ring-emerald-200 dark:ring-emerald-800">
-                <span className="size-1.5 rounded-full bg-emerald-500" />
-                1 free live chat session
+                <ArrowLeftIcon className="size-3" />
+                1 free live chat session with your custom URL
             </span>
         );
     }

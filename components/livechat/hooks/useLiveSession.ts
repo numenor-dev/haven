@@ -13,6 +13,7 @@ import {
     LiveSessionReturn
 } from "@/types/types";
 import { useStream } from "../../hooks/useStream";
+import { useSmoothChat } from "@/components/hooks/useSmoothChat";
 
 
 export default function useLiveSession({ slug, clientName }: LiveSessionProps): LiveSessionReturn {
@@ -22,6 +23,10 @@ export default function useLiveSession({ slug, clientName }: LiveSessionProps): 
     const [error, setError] = useState<Error | null>(null);
 
     const hasStarted = useRef(false);
+
+    const { textRef, enqueue, reset } = useSmoothChat(() => {
+        setStatus('user_turn');
+    })
 
     const appendToLastMessage = useCallback((text: string) => {
         setMessages((prev) => {
@@ -35,8 +40,13 @@ export default function useLiveSession({ slug, clientName }: LiveSessionProps): 
         });
     }, []);
 
+    const onChunk = useCallback((delta: string) => {
+        enqueue(delta);
+        appendToLastMessage(delta);
+    }, [enqueue, appendToLastMessage])
+
+
     const onComplete = useCallback(() => {
-        setStatus('user_turn');
         setMessages((prev) => {
             const updated = [...prev];
             const last = updated[updated.length - 1];
@@ -49,15 +59,17 @@ export default function useLiveSession({ slug, clientName }: LiveSessionProps): 
             return updated;
         });
     }, []);
-    const onSessionComplete = useCallback(() => setStatus('complete'), []);
+    
     const onError = useCallback((error: Error) => {
         console.error('[useLiveSession] Stream error:', error);
         setError(error);
         setStatus('error');
     }, []);
 
+    const onSessionComplete = useCallback(() => setStatus('complete'), []);
+
     const { startStream, cancelStream } = useStream({
-        onChunk: appendToLastMessage,
+        onChunk,
         onComplete,
         onError,
         onSessionComplete
@@ -119,10 +131,34 @@ export default function useLiveSession({ slug, clientName }: LiveSessionProps): 
             const cleanHistory = updatedHistory.map(({ role, content }) => ({ role, content }));
             setMessages([...updatedHistory, { role: 'assistant', content: '' }]);
             setStatus('streaming');
+            reset();
             startStream(cleanHistory, { slug, sessionId, transcript: updatedHistory });
         },
-        [status, messages, slug, startStream, sessionId]
+        [status, messages, slug, startStream, sessionId, reset]
     );
 
-    return { status, messages, sessionId, sendMessage, cancel, error };
+    const manualEndSession = useCallback(async () => {
+        setStatus('complete');
+
+        if (!sessionId) return;
+
+        try {
+
+            const res = await fetch('/api/chat/session', {
+                method: 'PATCH',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ sessionId }),
+            });
+
+            if (!res.ok) {
+                console.error('Failed to update session status on the server');
+            }
+        } catch (err) {
+            console.error('Error ending session:', err);
+        }
+    }, [sessionId]);
+
+    return { status, messages, sessionId, sendMessage, cancel, manualEndSession, textRef, error };
 }

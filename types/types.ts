@@ -1,4 +1,5 @@
 import { chatSessions, chatRecords } from "@/lib/db/schema"
+import { RefObject } from "react";
 
 export type SessionStatus = "idle" | "active" | "streaming" | "user_turn" | "complete" | "expired" | "error"
 
@@ -24,14 +25,15 @@ export type DemoSessionProps = {
 
 export type ChatSession = typeof chatSessions.$inferSelect;
 
-
 export type LiveSessionReturn = {
     status: SessionStatus;
     messages: Message[];
     error: Error | null;
     sessionId: string | null;
     sendMessage: (content: string) => void;
+    manualEndSession: () => void;
     cancel: () => void;
+    textRef: RefObject<HTMLSpanElement | null>;
 }
 
 export type ChatRecordsStatus = 'new' | 'reviewed'
@@ -53,12 +55,13 @@ export type DemoSessionReturn = {
     sendMessage: (content: string) => void;
     cancel: () => void;
     reset: () => void;
+    textRef: RefObject<HTMLSpanElement | null>;
 }
 
 export type StreamChunk =
     | { type: "content_block_delta"; delta: { type: "text_delta"; text: string } }
     | { type: "message_stop" }
-    | { type: "session_complete"}
+    | { type: "session_complete" }
     | { type: "error"; error: string }
 
 export type UseStreamProps = {
@@ -210,3 +213,18 @@ export type CompleteHook = (
     controller: ReadableStreamDefaultController<Uint8Array>,
     encoder: TextEncoder,
 ) => Promise<void>;
+
+export type FieldProps = { label: string; value: string; className?: string };
+
+export type SectionProps = {
+    title: string;
+    icon: React.ElementType;
+    children: React.ReactNode;
+    cols?: 1 | 2;
+};
+
+export type TranscriptSectionProps = {
+    transcript: Message[] | null;
+    open: boolean;
+    onToggle: () => void;
+};
