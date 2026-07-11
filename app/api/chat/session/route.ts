@@ -12,7 +12,8 @@ import {
     getSession,
     completeSession
 } from '@/lib/api/chatSessions';
-
+import { extractChatData } from '@/lib/api/extraction';
+import { completeChatRecord } from '@/lib/api/chatRecords';
 
 export async function POST(req: NextRequest) {
     const body = await req.json().catch(() => null);
@@ -28,9 +29,9 @@ export async function POST(req: NextRequest) {
 
     try {
         const [firm] = await db
-            .select({ 
-                id: firms.id, 
-                slug: firms.slug, 
+            .select({
+                id: firms.id,
+                slug: firms.slug,
                 isTrialUsed: firms.trialUsed,
                 activeSubscription: firms.hasActiveSubscription
             })
@@ -68,13 +69,26 @@ export async function GET(req: NextRequest) {
 
 export async function PATCH(req: NextRequest) {
     const body = await req.json().catch(() => null);
-    const sessionId = body?.sessionId;
+    const { sessionId, transcript, clientName, clientPhone, clientEmail } = body;
+
     if (!sessionId || typeof sessionId !== 'string') {
         return NextResponse.json({ error: 'sessionId is required' }, { status: 400 });
+    }
+    if (!Array.isArray(transcript) || transcript.length === 0) {
+        return NextResponse.json({ error: 'transcript is required' }, { status: 400 });
     }
 
     try {
         const session = await completeSession(sessionId);
+
+        const structuredData = await extractChatData(transcript, {
+            clientName,
+            clientPhone,
+            clientEmail
+        });
+
+        await completeChatRecord(sessionId, { structuredData, transcript, clientName });
+
         return NextResponse.json(session);
     } catch (err) {
         return handleApiError(err);

@@ -8,11 +8,10 @@ import StreamingIndicator from "../ui/loading";
 import { ArrowUpIcon, StopIcon } from "@heroicons/react/24/solid";
 
 export default function LiveChat({ slug, firmName }: LiveChatProps) {
+    const [gateFields, setGateFields] = useState({ name: '', phone: '', email: '' });
+    const [clientInfo, setClientInfo] = useState<{ name: string; phone: string; email: string } | null>(null);
 
-    const [clientName, setClientName] = useState<string>('');
-    const [nameInput, setNameInput] = useState("");
-
-    const { status, messages, sendMessage, manualEndSession, textRef, cancel, error } = useLiveSession({ slug, clientName });
+    const { status, messages, sendMessage, manualEndSession, textRef, cancel, error } = useLiveSession({ slug, clientInfo });
 
     const messagesEndRef = useRef<HTMLDivElement>(null);
     const inputRef = useRef<HTMLTextAreaElement>(null);
@@ -40,40 +39,83 @@ export default function LiveChat({ slug, firmName }: LiveChatProps) {
         }
     };
 
-    const handleSubmit: React.SubmitEventHandler<HTMLFormElement> = (e) => {
+    const handleSubmit = (e: React.SubmitEvent) => {
         e.preventDefault();
-        const trimmed = nameInput.trim();
-        if (!trimmed) return;
-        setClientName(trimmed);
+        if (!gateFields.name.trim()) return;
+
+        setClientInfo({
+            name: gateFields.name.trim(),
+            phone: gateFields.phone.trim(),
+            email: gateFields.email.trim(),
+        });
     };
 
     return (
         <AnimatePresence mode="wait">
-            {!clientName ? (
+            {!clientInfo ? (
                 <motion.form
                     key="name-gate"
                     onSubmit={handleSubmit}
                     exit={{ opacity: 0, x: -25 }}
                     transition={{ duration: 0.5, ease: "easeInOut" }}
-                    className="h-150 flex flex-col"
+                    className="min-h-150 space-y-2 flex flex-col dark:bg-sky-800/30 rounded-2xl"
                 >
                     <label
                         htmlFor="client-name"
-                        className="ml-3 mb-1 text-lg text-white dark:text-zinc-300 font-semibold">
+                        className="ml-3 mb-1 text-lg text-white dark:text-zinc-300 font-semibold"
+                    >
                         Please enter your full name
                     </label>
                     <input
                         autoFocus
                         id="client-name"
-                        value={nameInput}
-                        onChange={(e) => setNameInput(e.target.value)}
-                        className="w-full h-10 pl-5 border border-zinc-50 focus:border-zinc-100 
-                        dark:border-zinc-400 dark:focus:border-zinc-300 text-white dark:text-zinc-300 rounded-xl"
+                        value={gateFields.name}
+                        onChange={(e) => setGateFields(prev => ({ ...prev, name: e.target.value }))}
+                        className="w-full h-10 pl-5 border border-zinc-200 focus:border-zinc-100/10
+                        dark:border-zinc-400 dark:focus:border-zinc-300 text-white dark:text-zinc-300 rounded-lg"
                     />
+
+                    <label
+                        htmlFor="client-phone"
+                        className="ml-3 mt-5 mb-1 text-lg text-white dark:text-zinc-300 font-semibold"
+                    >
+                        Phone number
+                        <span className="ml-2 text-sm font-normal text-zinc-300 dark:text-zinc-500">
+                            optional
+                        </span>
+                    </label>
+                    <input
+                        id="client-phone"
+                        type="tel"
+                        value={gateFields.phone}
+                        onChange={(e) => setGateFields(prev => ({ ...prev, name: e.target.value }))}
+                        className="w-full h-10 pl-5 border border-zinc-200 focus:border-zinc-100/20
+                        dark:border-zinc-400 dark:focus:border-zinc-300 text-white dark:text-zinc-300 rounded-lg"
+                    />
+
+                    <label
+                        htmlFor="client-email"
+                        className="ml-3 mt-5 mb-1 text-lg text-white dark:text-zinc-300 font-semibold"
+                    >
+                        Email address
+                        <span className="ml-2 text-sm font-normal text-zinc-300 dark:text-zinc-500">
+                            optional
+                        </span>
+                    </label>
+                    <input
+                        id="client-email"
+                        type="email"
+                        value={gateFields.email}
+                        onChange={(e) => setGateFields(prev => ({ ...prev, name: e.target.value }))}
+                        className="w-full h-10 pl-5 border border-zinc-200 focus:border-zinc-100/50
+                        dark:border-zinc-400 dark:focus:border-zinc-300 text-white dark:text-zinc-300 rounded-lg"
+                    />
+
                     <button
                         type="submit"
                         className="mx-auto py-2 w-1/2 bg-zinc-100/90 dark:bg-sky-800 text-sky-700 dark:text-zinc-300
-                        hover:bg-white dark:hover:bg-sky-700 transition duration-300 mt-7 cursor-pointer rounded-2xl">
+            hover:bg-white dark:hover:bg-sky-700 transition duration-300 mt-7 cursor-pointer rounded-2xl"
+                    >
                         Continue
                     </button>
                 </motion.form>
@@ -96,7 +138,7 @@ export default function LiveChat({ slug, firmName }: LiveChatProps) {
                                 disabled={status === "complete"}
                                 onClick={manualEndSession}
                                 aria-label="End chat"
-                                className="px-5 py-1 ml-auto text-xs rounded-3xl bg-red-700/70 dark:bg-red-800 cursor-pointer">
+                                className="px-5 py-1 ml-auto text-xs rounded-3xl bg-red-700/70 dark:bg-red-800 cursor-pointer disabled:opacity-30 disabled:cursor-not-allowed">
                                 End Chat
                             </button>
                         </div>

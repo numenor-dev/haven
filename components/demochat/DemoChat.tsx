@@ -10,7 +10,6 @@ import { ArrowUpIcon, StopIcon } from "@heroicons/react/24/solid";
 export default function DemoChat({ isActive }: DemoSessionProps) {
     const { status, messages, sendMessage, textRef, cancel, error } = useDemoSession({ isActive });
 
-    const messagesEndRef = useRef<HTMLDivElement>(null);
     const inputRef = useRef<HTMLTextAreaElement>(null);
 
     const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
@@ -108,8 +107,6 @@ export default function DemoChat({ isActive }: DemoSessionProps) {
                         End of demo
                     </motion.p>
                 )}
-
-                <div ref={messagesEndRef} />
             </div>
 
             {/* Input bar */}

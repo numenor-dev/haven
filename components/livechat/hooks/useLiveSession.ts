@@ -16,7 +16,7 @@ import { useStream } from "../../hooks/useStream";
 import { useSmoothChat } from "@/components/hooks/useSmoothChat";
 
 
-export default function useLiveSession({ slug, clientName }: LiveSessionProps): LiveSessionReturn {
+export default function useLiveSession({ slug, clientInfo }: LiveSessionProps): LiveSessionReturn {
     const [status, setStatus] = useState<SessionStatus>('idle');
     const [messages, setMessages] = useState<Message[]>([]);
     const [sessionId, setSessionId] = useState<string | null>(null);
@@ -87,7 +87,12 @@ export default function useLiveSession({ slug, clientName }: LiveSessionProps): 
             const res = await fetch('/api/chat/session', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ slug, clientName }),
+                body: JSON.stringify({
+                    slug,
+                    clientName: clientInfo?.name,
+                    clientPhone: clientInfo?.phone,
+                    clientEmail: clientInfo?.email
+                }),
             });
 
             if (!res.ok) {
@@ -104,10 +109,10 @@ export default function useLiveSession({ slug, clientName }: LiveSessionProps): 
             setError(err instanceof Error ? err : new Error('Failed to start session'));
             setStatus('error');
         }
-    }, [slug, clientName, startStream]);
+    }, [slug, clientInfo, startStream]);
 
     useEffect(() => {
-        if (!clientName || hasStarted.current) return;
+        if (!clientInfo || hasStarted.current) return;
         hasStarted.current = true;
         let cancelled = false;
         start().then(() => {
@@ -116,7 +121,7 @@ export default function useLiveSession({ slug, clientName }: LiveSessionProps): 
             }
         });
         return () => { cancelled = true; };
-    }, [clientName, start]);
+    }, [clientInfo, start]);
 
     const sendMessage = useCallback(
         (content: string) => {
@@ -139,7 +144,7 @@ export default function useLiveSession({ slug, clientName }: LiveSessionProps): 
 
     const manualEndSession = useCallback(async () => {
         setStatus('complete');
-
+        
         if (!sessionId) return;
 
         try {
@@ -149,7 +154,13 @@ export default function useLiveSession({ slug, clientName }: LiveSessionProps): 
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify({ sessionId }),
+                body: JSON.stringify({
+                    sessionId,
+                    transcript: messages,
+                    clientName: clientInfo?.name,
+                    clientPhone: clientInfo?.phone,
+                    clientEmail: clientInfo?.email
+                }),
             });
 
             if (!res.ok) {
@@ -158,7 +169,7 @@ export default function useLiveSession({ slug, clientName }: LiveSessionProps): 
         } catch (err) {
             console.error('Error ending session:', err);
         }
-    }, [sessionId]);
+    }, [sessionId, messages, clientInfo]);
 
     return { status, messages, sessionId, sendMessage, cancel, manualEndSession, textRef, error };
 }

@@ -1,6 +1,7 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect, useTransition } from 'react';
+import { updateRecordStatus } from '@/app/dashboard/actions';
 import {
     DocumentArrowDownIcon,
     ExclamationTriangleIcon,
@@ -164,12 +165,36 @@ function TranscriptSection({ transcript, open, onToggle }: TranscriptSectionProp
 }
 
 export default function DataPanel({ record, userName }: DataPanelProps) {
+    const [recordStatus, setRecordStatus] = useState<ChatRecordsStatus>(record?.status ?? 'new');
+    const [isPending, startTransition] = useTransition();
     const [transcriptOpen, setTranscriptOpen] = useState(false);
+
+    useEffect(() => {
+       if (record)
+        // eslint-disable-next-line react-hooks/set-state-in-effect
+        setRecordStatus(record?.status ?? 'new');
+    }, [record]);
+
+    const handleStatusToggle = () => {
+        const next: ChatRecordsStatus = recordStatus === 'new' ? 'reviewed' : 'new';
+        setRecordStatus(next);
+        startTransition(async () => {
+            const result = await updateRecordStatus(record?.id ?? '', next);
+            if (!result.success) {
+                setRecordStatus(recordStatus); // revert on failure
+                console.error('[DataPanel] Status update failed:', result.error);
+            }
+            // success: revalidatePath in the action re-fetches the server component,
+            // record.status reconciles with optimisticStatus on the next render
+        });
+    };
 
     // No selection
     if (!record) return <EmptyState userName={userName} />;
 
     const structured = record.structuredData as StructuredData;
+
+    console.log(structured)
 
     // Record exists but extraction hasn't completed yet
     if (!structured) {
@@ -195,7 +220,7 @@ export default function DataPanel({ record, userName }: DataPanelProps) {
         session_metadata,
     } = structured;
 
-    const hasSoL   = session_metadata.statute_of_limitations_concern;
+    const hasSoL = session_metadata.statute_of_limitations_concern;
     const hasFlags = complexity_flags && complexity_flags.length > 0;
 
     return (
@@ -213,11 +238,16 @@ export default function DataPanel({ record, userName }: DataPanelProps) {
                     </div>
 
                     <div className="flex shrink-0 items-center gap-3">
-                        <StatusBadge status={record.status} />
+                        <StatusBadge status={recordStatus} />
 
-                        {/* TODO: wire to server action in app/dashboard/actions.ts
-                            updateChatRecordsStatus(record.id, firmId, 'reviewed')
-                            then router.refresh() to re-run the server component fetch */}
+                        <button
+                            type="button"
+                            onClick={handleStatusToggle}
+                            disabled={isPending}
+                            className="text-xs text-zinc-500 dark:text-zinc-400 hover:text-zinc-800 dark:hover:text-zinc-200 transition-colors disabled:opacity-40"
+                        >
+                            {recordStatus === 'new' ? 'Mark as reviewed' : 'Mark as new'}
+                        </button>
 
                         {record.pdfUrl ? (
                             <a
@@ -286,12 +316,12 @@ export default function DataPanel({ record, userName }: DataPanelProps) {
                 <div className="grid grid-cols-1 gap-4 xl:grid-cols-2">
 
                     <Section title="Incident" icon={MapPinIcon}>
-                        <Field label="Type"                 value={formatTitle(incident_details.incident_type)} />
-                        <Field label="Date"                 value={formatDate(incident_details.incident_date)} />
-                        <Field label="Location"             value={incident_details.incident_location ?? '—'} />
-                        <Field label="Police report filed"  value={yesNo(incident_details.police_report_filed)} />
-                        <Field label="Witnesses present"    value={yesNo(incident_details.witnesses_present)} />
-                        <Field label="Evidence / photos"    value={yesNo(incident_details.photos_or_evidence)} />
+                        <Field label="Type" value={formatTitle(incident_details.incident_type)} />
+                        <Field label="Date" value={formatDate(incident_details.incident_date)} />
+                        <Field label="Location" value={incident_details.incident_location ?? '—'} />
+                        <Field label="Police report filed" value={yesNo(incident_details.police_report_filed)} />
+                        <Field label="Witnesses present" value={yesNo(incident_details.witnesses_present)} />
+                        <Field label="Evidence / photos" value={yesNo(incident_details.photos_or_evidence)} />
                         {incident_details.incident_description && (
                             <Field
                                 label="Description"
@@ -302,8 +332,8 @@ export default function DataPanel({ record, userName }: DataPanelProps) {
                     </Section>
 
                     <Section title="Injuries" icon={HeartIcon}>
-                        <Field label="Medical status"   value={formatTitle(injuries.current_medical_status)} />
-                        <Field label="Hospitalized"     value={yesNo(injuries.hospitalized)} />
+                        <Field label="Medical status" value={formatTitle(injuries.current_medical_status)} />
+                        <Field label="Hospitalized" value={yesNo(injuries.hospitalized)} />
                         <Field label="Surgery required" value={yesNo(injuries.surgeries_required)} />
                         {injuries.injury_types?.length ? (
                             <Field
@@ -323,7 +353,7 @@ export default function DataPanel({ record, userName }: DataPanelProps) {
 
                     {medical_treatment && (
                         <Section title="Medical Treatment" icon={ClipboardDocumentListIcon}>
-                            <Field label="Ongoing treatment"    value={yesNo(medical_treatment.ongoing_treatment)} />
+                            <Field label="Ongoing treatment" value={yesNo(medical_treatment.ongoing_treatment)} />
                             <Field label="Est. medical expenses" value={formatExpenses(medical_treatment.estimated_medical_expenses)} />
                             {medical_treatment.providers_seen && (
                                 <Field label="Providers" value={medical_treatment.providers_seen} className="col-span-2" />
@@ -336,31 +366,31 @@ export default function DataPanel({ record, userName }: DataPanelProps) {
 
                     {liability && (
                         <Section title="Liability" icon={ScaleIcon}>
-                            <Field label="At-fault party"      value={liability.at_fault_party ?? '—'} />
-                            <Field label="Client fault"        value={formatTitle(liability.client_fault)} />
+                            <Field label="At-fault party" value={liability.at_fault_party ?? '—'} />
+                            <Field label="Client fault" value={formatTitle(liability.client_fault)} />
                             <Field label="Multiple defendants" value={yesNo(liability.multiple_defendants)} />
                         </Section>
                     )}
 
                     {insurance_information && (
                         <Section title="Insurance" icon={ShieldCheckIcon}>
-                            <Field label="Client insured"           value={yesNo(insurance_information.client_has_insurance)} />
-                            <Field label="Opposing party insured"   value={yesNo(insurance_information.at_fault_party_insured)} />
-                            <Field label="Claim filed"              value={yesNo(insurance_information.claim_filed)} />
-                            <Field label="Claim status"             value={formatTitle(insurance_information.claim_status)} />
+                            <Field label="Client insured" value={yesNo(insurance_information.client_has_insurance)} />
+                            <Field label="Opposing party insured" value={yesNo(insurance_information.at_fault_party_insured)} />
+                            <Field label="Claim filed" value={yesNo(insurance_information.claim_filed)} />
+                            <Field label="Claim status" value={formatTitle(insurance_information.claim_status)} />
                             <Field label="Prior settlement offered" value={yesNo(insurance_information.prior_settlement_offered)} />
                         </Section>
                     )}
 
                     {damages && (
                         <Section title="Damages" icon={BanknotesIcon}>
-                            <Field label="Lost wages"      value={yesNo(damages.lost_wages)} />
+                            <Field label="Lost wages" value={yesNo(damages.lost_wages)} />
                             <Field label="Property damage" value={yesNo(damages.property_damage)} />
 
                             {damages.lost_wages === true && (
                                 <>
                                     <Field label="Time missed from work" value={damages.time_missed_from_work ?? '—'} />
-                                    <Field label="Occupation"            value={damages.occupation ?? '—'} />
+                                    <Field label="Occupation" value={damages.occupation ?? '—'} />
                                 </>
                             )}
                             {damages.property_damage && damages.property_damage_description && (
@@ -384,13 +414,13 @@ export default function DataPanel({ record, userName }: DataPanelProps) {
                 {/* Contact and scheduling — always rendered, always side-by-side on xl */}
                 <div className="grid grid-cols-1 gap-4 xl:grid-cols-2">
                     <Section title="Client Contact" icon={UserCircleIcon}>
-                        <Field label="Name"  value={client_identification.full_name} />
+                        <Field label="Name" value={client_identification.full_name} />
                         <Field label="Phone" value={client_identification.phone ?? '—'} />
                         <Field label="Email" value={client_identification.email ?? '—'} />
                     </Section>
 
                     <Section title="Scheduling Preference" icon={CalendarDaysIcon}>
-                        <Field label="Format"  value={formatTitle(scheduling_preference.preferred_format)} />
+                        <Field label="Format" value={formatTitle(scheduling_preference.preferred_format)} />
                         <Field label="Urgency" value={formatTitle(scheduling_preference.urgency_to_consult)} />
                         {scheduling_preference.preferred_times && (
                             <Field label="Preferred times" value={scheduling_preference.preferred_times} className="col-span-2" />
@@ -404,9 +434,9 @@ export default function DataPanel({ record, userName }: DataPanelProps) {
                 {/* Prior representation */}
                 {prior_representation && (
                     <Section title="Prior Representation" icon={DocumentTextIcon}>
-                        <Field label="Spoken with other attorneys"  value={yesNo(prior_representation.spoken_with_other_attorneys)} />
-                        <Field label="Has existing representation"  value={yesNo(prior_representation.has_existing_representation)} />
-                        <Field label="Prior claims or lawsuits"     value={yesNo(prior_representation.prior_claims_or_lawsuits)} />
+                        <Field label="Spoken with other attorneys" value={yesNo(prior_representation.spoken_with_other_attorneys)} />
+                        <Field label="Has existing representation" value={yesNo(prior_representation.has_existing_representation)} />
+                        <Field label="Prior claims or lawsuits" value={yesNo(prior_representation.prior_claims_or_lawsuits)} />
                     </Section>
                 )}
 

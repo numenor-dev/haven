@@ -49,7 +49,7 @@ export default function LoginPage({ className }: React.ComponentProps<"div">) {
   return (
     <div className="chat-bg min-h-screen">
       <div className={cn("flex flex-col max-w-sm md:max-w-xl mt-24 mx-auto", className)}>
-        <Card className="dark:bg-zinc-800/50">
+        <Card className="dark:bg-zinc-700/50">
           <CardHeader>
             <CardTitle className="text-xl mx-auto mt-5 md:text-2xl tracking-tighter">
               Welcome!

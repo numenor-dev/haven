@@ -16,7 +16,7 @@ export type LiveChatProps = {
 
 export type LiveSessionProps = {
     slug: string;
-    clientName: string;
+    clientInfo: { name: string; phone: string; email: string } | null;
 }
 
 export type DemoSessionProps = {
@@ -205,8 +205,9 @@ export type StructuredData = {
 
 export type CompleteChatRecord = {
     transcript: TranscriptMessage[];
-    structuredData: StructuredData;
-    pdfUrl: string | null;
+    structuredData: StructuredData | null;
+    pdfUrl?: string | null;
+    clientName: string;
 };
 
 export type CompleteHook = (
@@ -228,3 +229,5 @@ export type TranscriptSectionProps = {
     open: boolean;
     onToggle: () => void;
 };
+
+export type ActionResult = { success: true } | { success: false; error: string };

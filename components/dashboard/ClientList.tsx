@@ -30,7 +30,7 @@ export default function ClientList({ chats }: { chats: ChatRecordsListItem[] }) 
     return (
         <aside className={cn(
             'border-r border-zinc-300 dark:border-zinc-700/80 bg-zinc-200/30 dark:bg-zinc-950 flex flex-col overflow-hidden transition-all duration-200',
-            isOpen ? 'w-72' : 'w-16'
+            isOpen ? 'w-80' : 'w-16'
         )}>
             {isOpen && (
                 <>

@@ -442,8 +442,8 @@ export async function POST(req: NextRequest) {
 
                 if (!toolBlock) return;
 
-                // Append the final assistant turn to the client-supplied transcript.
-                // Extract text blocks only — tool_use blocks are not part of the visible conversation.
+                // Append the final assistant turn to the client transcript.
+                // Extract text blocks only
                 const finalText = finalMessage.content
                     .filter((b): b is Anthropic.TextBlock => b.type === 'text')
                     .map(b => b.text)
@@ -467,9 +467,7 @@ export async function POST(req: NextRequest) {
                             `data: ${JSON.stringify({ type: 'session_complete' })}\n\n`
                         )
                     );
-                } catch {
-                    // Ignore: The database saved successfully, but the client already left.
-                }
+                } catch {}
             } catch (err) {
                 console.error('[stream route] Completion pipeline failed:', err);
                 // Session remains active if this fails.

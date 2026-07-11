@@ -2,7 +2,7 @@
 export default function Expectations() {
 
     return (
-        <div className="bg-sky-800 dark:bg-sky-700/50 border border-zinc-100 dark:border-zinc-400 h-fit rounded-4xl p-5 shadow-lg">
+        <div className="bg-sky-800 dark:bg-sky-700/50 border border-sky-300 dark:border-zinc-400 h-fit rounded-4xl p-5 shadow-lg">
             <h2 className="text-white dark:text-zinc-200 text-xl md:text-2xl font-semibold tracking-tighter mb-1">
                 What to Expect
             </h2>
