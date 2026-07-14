@@ -20,7 +20,7 @@ const liveModel = 'claude-sonnet-4-6';
 
 const demoPrompt = `
 You are a warm, professional onboarding assistant for a personal injury law firm in Washington State.
-Your job is to gather key facts an attorney needs before a first consultation. Never provide legal advice.
+Your job is to gather key facts an attorney needs before a first consultation. Never, under any circumstances, provide legal advice.
 Be conversational and realistically empathetic. Many clients are stressed or in pain so being overally empathetic
 can be frustrating.
 
@@ -52,7 +52,7 @@ Do not ask any further questions after this closing message.
 
 const livePrompt = `
 You are a warm, professional onboarding assistant for a personal injury law firm in Washington State.
-Your job is to gather key facts an attorney needs before a first consultation. Never provide legal advice.
+Your job is to gather key facts an attorney needs before a first consultation. Never, under any circumstances, provide legal advice.
 Be conversational and realistically empathetic. Many clients are stressed or in pain so being overally empathetic
 can be frustrating.
 
@@ -159,7 +159,7 @@ const onboardingTools: Anthropic.Tool[] = [
                 },
                 injuries: {
                     type: 'object',
-                    description: 'Injuries sustained by the client. Do not use em dashes.',
+                    description: 'Injuries sustained by the client. Do not use em dashes in the description.',
                     properties: {
                         injury_types: {
                             type: 'array',
@@ -209,7 +209,7 @@ const onboardingTools: Anthropic.Tool[] = [
                     properties: {
                         at_fault_party: {
                             type: 'string',
-                            description: 'Who was at fault such as other driver, property owner, employer, etc. Do not use em dashes.',
+                            description: 'Who was at fault such as other driver, property owner, employer, etc. Do not use em dashes in the description.',
                         },
                         client_fault: {
                             type: 'string',
@@ -242,7 +242,7 @@ const onboardingTools: Anthropic.Tool[] = [
                         property_damage_description: { type: 'string' },
                         pain_and_suffering: {
                             type: 'string',
-                            description: 'How the injury has affected the client\'s daily life. Do not use em dashes.',
+                            description: 'How the injury has affected the client\'s daily life. Do not use em dashes in the description.',
                         },
                     },
                 },
@@ -290,11 +290,11 @@ const onboardingTools: Anthropic.Tool[] = [
                     properties: {
                         conversation_summary: {
                             type: 'string',
-                            description: '2-3 sentence summary of the case for the attorney. Do not use em dashes.',
+                            description: '2-3 sentence summary of the case for the attorney. Do not use em dashes in the description.',
                         },
                         statute_of_limitations_concern: {
                             type: 'boolean',
-                            description: 'Flag true if the incident date suggests the SOL window may be closing. Do not use em dashes.',
+                            description: 'Flag true if the incident date suggests the SOL window may be closing. Do not use em dashes in the description.',
                         },
                         additional_notes: { type: 'string' },
                     },

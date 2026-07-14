@@ -4,7 +4,6 @@ import { getFirmIdForUser } from "@/lib/dashboard";
 import { auth } from "@/lib/auth/server";
 import LiveChat from "@/components/livechat/LiveChat";
 import ChatUnavailable from "@/components/livechat/ChatUnavailable";
-import Expectations from "@/components/livechat/Expectations";
 import Header from "@/components/livechat/Header";
 import Footer from "@/components/landing/Footer";
 
@@ -19,10 +18,10 @@ export default async function ClientPage({ params }: { params: Promise<{ slug: s
 
     const { data: session } = await auth.getSession();
     
-    let isOwner = false;
+    let isAttorney = false;
     if (session?.user?.id) {
         const userFirmId = await getFirmIdForUser(session.user.id);
-        isOwner = userFirmId === firm.id;
+        isAttorney = userFirmId === firm.id;
     }
 
     const isLockedOut = firm.trialUsed && !firm.activeSubscription;
@@ -35,13 +34,11 @@ export default async function ClientPage({ params }: { params: Promise<{ slug: s
                     Welcome to {firm.firmName}
                 </h1>
             </div>
-            <div className="flex flex-col mx-auto gap-y-10 md:grid md:grid-cols-[5fr_5fr] md:gap-x-8 px-7 max-w-7xl">
-                <Expectations />
-
+            <div className="flex flex-col mx-auto gap-y-10 md:gap-x-8 px-7 max-w-3xl">
                 {isLockedOut ? (
                     <ChatUnavailable 
                         firmPhone={tempPhoneNumber}
-                        isOwner={isOwner}
+                        isOwner={isAttorney}
                         slug={slug}
                     />
                 ) : (

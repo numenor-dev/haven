@@ -57,7 +57,7 @@ export function useSmoothChat(onDrained?: () => void) {
             fallbackRef.current = setTimeout(() => {
                 fallbackRef.current = null;
                 if (!timerRef.current) drain();
-            }, 600);
+            }, 300);
         }
     }
 }, [drain]);

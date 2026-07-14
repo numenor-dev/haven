@@ -6,6 +6,14 @@ import { LiveChatProps } from "@/types/types";
 import useLiveSession from "./hooks/useLiveSession";
 import StreamingIndicator from "../ui/loading";
 import { ArrowUpIcon, StopIcon } from "@heroicons/react/24/solid";
+import { toast } from "sonner";
+
+const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+
+const toastConfig = {
+    duration: 3000,
+    richColors: true
+} as const;
 
 export default function LiveChat({ slug, firmName }: LiveChatProps) {
     const [gateFields, setGateFields] = useState({ name: '', phone: '', email: '' });
@@ -49,12 +57,24 @@ export default function LiveChat({ slug, firmName }: LiveChatProps) {
 
     const handleSubmit = (e: React.SubmitEvent) => {
         e.preventDefault();
-        if (!gateFields.name.trim()) return;
+        if (!gateFields.name.trim()) {
+            toast.error("Please enter your name", toastConfig)
+            return
+        }
+
+        if (!gateFields.email.trim()) {
+            toast.error('Please enter your email address', toastConfig);
+            return;
+        }
+        if (!emailRegex.test(gateFields.email.trim())) {
+            toast.error('Please enter a valid email address', toastConfig);
+            return;
+        }
 
         setClientInfo({
             name: gateFields.name.trim(),
-            phone: gateFields.phone.trim(),
             email: gateFields.email.trim(),
+            phone: gateFields.phone.trim(),
         });
     };
 
@@ -65,66 +85,113 @@ export default function LiveChat({ slug, firmName }: LiveChatProps) {
                     key="name-gate"
                     onSubmit={handleSubmit}
                     exit={{ opacity: 0, x: -25 }}
-                    transition={{ duration: 0.5, ease: "easeInOut" }}
-                    className="min-h-96 space-y-2 flex flex-col bg-sky-100 dark:bg-sky-900 p-16 rounded-2xl"
+                    transition={{ duration: 0.5, ease: 'easeInOut' }}
+                    className="w-full max-w-2xl mx-auto flex flex-col rounded-2xl shadow-2xl overflow-hidden"
                 >
-                    <label
-                        htmlFor="client-name"
-                        className="ml-3 mb-1 text-sm md:text-base text-zinc-700 dark:text-zinc-200 font-semibold"
-                    >
-                        Please enter your full name
-                    </label>
-                    <input
-                        id="client-name"
-                        value={gateFields.name}
-                        onChange={(e) => setGateFields(prev => ({ ...prev, name: e.target.value }))}
-                        className="w-full h-10 pl-5 outline-1 outline-zinc-700 focus:outline-sky-600
-                        dark:outline-zinc-300 dark:focus:outline-blue-300 text-zinc-700 dark:text-zinc-200 rounded-lg"
-                    />
+                    {/* Header band — matches chat window header aesthetic */}
+                    <div className="bg-sky-900 dark:bg-sky-950 px-8 py-8">
+                        <h2 className="text-xl md:text-2xl font-semibold tracking-tight text-zinc-100">
+                            Before we begin
+                        </h2>
+                        <p className="mt-1.5 text-base leading-relaxed text-sky-100/80">
+                            This chat session takes around 20 minutes. Your responses are
+                            confidential and shared only with your attorney.
+                        </p>
+                    </div>
 
-                    <label
-                        htmlFor="client-phone"
-                        className="ml-3 mt-5 mb-1 text-sm md:text-base text-zinc-700 dark:text-zinc-200 font-semibold"
-                    >
-                        Phone number
-                        <span className="ml-2 text-sm text-zinc-500 dark:text-zinc-400">
-                            optional
-                        </span>
-                    </label>
-                    <input
-                        id="client-phone"
-                        type="tel"
-                        value={gateFields.phone}
-                        onChange={(e) => setGateFields(prev => ({ ...prev, phone: e.target.value }))}
-                        className="w-full h-10 pl-5 outline-1 outline-zinc-700 focus:outline-sky-600
-                        dark:outline-zinc-300 dark:focus:outline-blue-300 text-zinc-700 dark:text-zinc-200 rounded-lg"
-                    />
+                    <div className="bg-zinc-50 dark:bg-zinc-900 px-8 pt-6 pb-2">
+                        <ul className="space-y-2.5">
+                            {[
+                                'There are no right or wrong answers. Please explain the situation in your own words.',
+                                'Take your time with each response. The session is conversational, not a form.',
+                                'Nothing in this conversation constitutes legal advice.',
+                            ].map((item, i) => (
+                                <li key={i} className="flex items-start gap-3">
+                                    <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-sky-500 dark:bg-sky-400" />
+                                    <span className="text-sm leading-relaxed text-zinc-600 dark:text-zinc-400">
+                                        {item}
+                                    </span>
+                                </li>
+                            ))}
+                        </ul>
+                    </div>
 
-                    <label
-                        htmlFor="client-email"
-                        className="ml-3 mt-5 mb-1 text-sm md:text-base text-zinc-700 dark:text-zinc-200 font-semibold"
-                    >
-                        Email address
-                        <span className="ml-2 text-sm text-zinc-500 dark:text-zinc-400">
-                            optional
-                        </span>
-                    </label>
-                    <input
-                        id="client-email"
-                        type="email"
-                        value={gateFields.email}
-                        onChange={(e) => setGateFields(prev => ({ ...prev, email: e.target.value }))}
-                        className="w-full h-10 pl-5 outline-1 outline-zinc-700 focus:outline-sky-600
-                        dark:outline-zinc-300 dark:focus:outline-blue-300 text-zinc-700 dark:text-zinc-200 rounded-lg"
-                    />
+                    {/* Fields */}
+                    <div className="bg-zinc-50 dark:bg-zinc-900 px-8 pt-6 pb-2 space-y-4">
+                        <div className="flex flex-col gap-1.5">
+                            <label
+                                htmlFor="client-name"
+                                className="text-sm font-semibold text-zinc-700 dark:text-zinc-300"
+                            >
+                                Full name
+                            </label>
+                            <input
+                                autoFocus
+                                id="client-name"
+                                value={gateFields.name}
+                                onChange={(e) => setGateFields(prev => ({ ...prev, name: e.target.value }))}
+                                className="w-full h-10 px-4 rounded-lg text-sm text-zinc-800 dark:text-zinc-200
+                                bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700
+                                focus:outline-none focus:ring-2 focus:ring-sky-500 dark:focus:ring-sky-600
+                                placeholder:text-zinc-400 transition"
+                            />
+                        </div>
 
-                    <button
-                        type="submit"
-                        className="mx-auto py-2 w-1/2 bg-sky-700 dark:bg-zinc-300 text-sky-100 dark:text-zinc-700
-                        hover:bg-sky-600 dark:hover:bg-zinc-100/90 transition duration-300 mt-10 cursor-pointer rounded-2xl"
-                    >
-                        Continue
-                    </button>
+                        <div className="flex flex-col gap-1.5">
+                            <label
+                                htmlFor="client-email"
+                                className="text-sm font-semibold text-zinc-700 dark:text-zinc-300"
+                            >
+                                Email address
+                            </label>
+                            <input
+                                id="client-email"
+                                type="email"
+                                value={gateFields.email}
+                                onChange={(e) => setGateFields(prev => ({ ...prev, email: e.target.value }))}
+                                className="w-full h-10 px-4 rounded-lg text-sm text-zinc-800 dark:text-zinc-200
+                                bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700
+                                focus:outline-none focus:ring-2 focus:ring-sky-500 dark:focus:ring-sky-600
+                                placeholder:text-zinc-400 transition"
+                            />
+                        </div>
+
+                        <div className="flex flex-col gap-1.5">
+                            <label
+                                htmlFor="client-phone"
+                                className="flex items-baseline gap-2 text-sm font-semibold text-zinc-700 dark:text-zinc-300"
+                            >
+                                Phone number
+                                <span className="text-xs font-normal text-zinc-400 dark:text-zinc-500">
+                                    optional
+                                </span>
+                            </label>
+                            <input
+                                id="client-phone"
+                                type="tel"
+                                value={gateFields.phone}
+                                onChange={(e) => setGateFields(prev => ({ ...prev, phone: e.target.value }))}
+                                className="w-full h-10 px-4 rounded-lg text-sm text-zinc-800 dark:text-zinc-200
+                                bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700
+                                focus:outline-none focus:ring-2 focus:ring-sky-500 dark:focus:ring-sky-600
+                                placeholder:text-zinc-400 transition"
+                            />
+                        </div>
+                    </div>
+
+                    {/* Submit */}
+                    <div className="bg-zinc-50 dark:bg-zinc-900 px-8 py-8">
+                        <button
+                            type="submit"
+                            className="w-full py-2.5 rounded-xl bg-sky-900 dark:bg-sky-800 text-white text-sm font-semibold
+                            hover:bg-sky-800 dark:hover:bg-sky-700 transition-colors duration-200 cursor-pointer"
+                        >
+                            Begin session
+                        </button>
+                        <p className="mt-3 text-center text-xs text-zinc-400 dark:text-zinc-600">
+                            Your information is confidential and encrypted.
+                        </p>
+                    </div>
                 </motion.form>
             ) : (
                 <motion.div
@@ -231,7 +298,9 @@ export default function LiveChat({ slug, firmName }: LiveChatProps) {
                                     }
                                     disabled={status !== "user_turn"}
                                     onKeyDown={handleKeyDown}
-                                    className="flex-1 bg-transparent resize-none text-sm text-zinc-800 dark:text-zinc-100 placeholder:text-zinc-700 dark:placeholder:text-zinc-300 outline-none disabled:cursor-not-allowed min-h-6 max-h-32 leading-6"
+                                    className="flex-1 bg-transparent resize-none text-sm text-zinc-800 dark:text-zinc-100
+                                    placeholder:text-zinc-700 dark:placeholder:text-zinc-300 outline-none
+                                    disabled:cursor-not-allowed min-h-6 max-h-32 leading-6 field-sizing-content"
                                 />
                                 <div className="flex mx-auto space-x-1">
                                     {status === "streaming" &&

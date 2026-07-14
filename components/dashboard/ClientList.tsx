@@ -35,9 +35,9 @@ export default function ClientList({ chats }: { chats: ChatRecordsListItem[] }) 
             {isOpen && (
                 <>
                     {/* Header */}
-                    <div className="px-4 pt-10 pb-5 shrink-0">
+                    <div className="px-4 pt-7 pb-3 shrink-0 border-b">
                         <div className="flex items-center justify-between">
-                            <h2 className="mx-auto text-sm font-semibold text-zinc-900 dark:text-zinc-100">
+                            <h2 className="mx-auto text-xs uppercase font-semibold text-zinc-900 dark:text-zinc-100">
                                 Clients
                             </h2>
                             {chats.length > 0 && (
