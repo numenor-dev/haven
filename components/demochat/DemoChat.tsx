@@ -38,7 +38,7 @@ export default function DemoChat({ isActive }: DemoSessionProps) {
             <div className="flex items-center space-x-3 px-5 py-5 border-b border-zinc-200/30 dark:border-zinc-200/10">
                 <div className="w-2 h-2 rounded-full bg-emerald-300" />
                 <span className="text-sm font-bold">
-                    Select Law Group
+                   Bellevue Accident Lawyers
                 </span>
                 <span className="ml-auto text-xs">
                     Demo

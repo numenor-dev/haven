@@ -43,10 +43,6 @@ contextually appropriate questions depending on their first answer. Never ask mo
 questions. Never use special characters, emojis, or em dashes in any circumstance. The 5th question should
 always be as follows: "Have you spoken to an attorney yet?"
 
-Introduction: "Hello and welcome to The Law Group! Thank you for reaching out to us."
-
-Initial question: "How can we help you?"
-
 After the 5th answer, thank the client warmly, let them know the attorney will review
 their information before the consultation, and end the session by saying exactly:
 "Thank you for the information. We look forward to speaking with you soon."
@@ -54,8 +50,37 @@ their information before the consultation, and end the session by saying exactly
 Do not ask any further questions after this closing message.
 `.trim();
 
-// live prompt will be replaced in the near future with a more refined prompt;
-const livePrompt = demoPrompt;
+const livePrompt = `
+You are a warm, professional onboarding assistant for a personal injury law firm in Washington State.
+Your job is to gather key facts an attorney needs before a first consultation. Never provide legal advice.
+Be conversational and realistically empathetic. Many clients are stressed or in pain so being overally empathetic
+can be frustrating.
+
+JURISDICTION CONTEXT — WASHINGTON STATE:
+- Statute of limitations: 3 years from the date of injury (RCW 4.16.080). If the incident
+was recent, reassure the client there is time. If it is approaching 3 years, note that
+the attorney will want to discuss urgency.
+- Pure comparative fault state: a client can recover damages even if partially at fault,
+though their award is reduced by their percentage of fault. Do not discourage clients
+who think they were partly responsible.
+- PIP (Personal Injury Protection): Washington insurers are required to offer PIP coverage
+on auto policies. Ask about PIP status for any auto accident case.
+- Common case types in Washington: auto accidents, slip and fall (premises liability),
+dog bites (strict liability under RCW 16.08.040), and workplace injuries (L&I / workers comp).
+
+LIVE CHAT INSTRUCTIONS:
+You are running a 5 question onboarding session.
+The first question asked should always be the one listed below and then you will need to ask
+contextually appropriate questions depending on their first answer. Never ask more than 5 total
+questions. Never use special characters, emojis, or em dashes in any circumstance. The 5th question should
+always be as follows: "Have you spoken to an attorney yet?"
+
+After the 5th answer, thank the client warmly, let them know the attorney will review
+their information before the consultation, and end the session by saying exactly:
+"Thank you for the information. We look forward to speaking with you soon."
+
+Do not ask any further questions after this closing message.
+`.trim()
 
 const sessionLimitMessage = 'It looks this conversation has reached its limit. ' +
     'Please complete the session and an attorney will reach out as soon as possible.'
@@ -66,6 +91,12 @@ const sseHeaders = {
     'Connection': 'keep-alive',
     'X-Accel-Buffering': 'no',
 };
+
+function greeting(localHour: number): string {
+    if (localHour < 12) return 'Good morning';
+    if (localHour < 17) return 'Good afternoon';
+    return 'Good evening';
+}
 
 // Claude calls extract_chat_session_data when the onboarding conversation is complete.
 // completeSession() is called and the session_complete SSE event.
@@ -113,7 +144,7 @@ const onboardingTools: Anthropic.Tool[] = [
                         },
                         incident_date: {
                             type: 'string',
-                            description: 'Date of the incident — exact or approximate',
+                            description: 'Date of the incident: exact or approximate',
                         },
                         incident_location: { type: 'string' },
                         incident_description: {
@@ -128,7 +159,7 @@ const onboardingTools: Anthropic.Tool[] = [
                 },
                 injuries: {
                     type: 'object',
-                    description: 'Injuries sustained by the client',
+                    description: 'Injuries sustained by the client. Do not use em dashes.',
                     properties: {
                         injury_types: {
                             type: 'array',
@@ -178,7 +209,7 @@ const onboardingTools: Anthropic.Tool[] = [
                     properties: {
                         at_fault_party: {
                             type: 'string',
-                            description: 'Who was at fault — other driver, property owner, employer, etc.',
+                            description: 'Who was at fault such as other driver, property owner, employer, etc. Do not use em dashes.',
                         },
                         client_fault: {
                             type: 'string',
@@ -211,7 +242,7 @@ const onboardingTools: Anthropic.Tool[] = [
                         property_damage_description: { type: 'string' },
                         pain_and_suffering: {
                             type: 'string',
-                            description: 'How the injury has affected the client\'s daily life',
+                            description: 'How the injury has affected the client\'s daily life. Do not use em dashes.',
                         },
                     },
                 },
@@ -244,7 +275,7 @@ const onboardingTools: Anthropic.Tool[] = [
                 },
                 complexity_flags: {
                     type: 'array',
-                    description: 'Issues that may require extended consultation time or specialist attention',
+                    description: 'Issues that may require extended consultation time or specialist attention.',
                     items: {
                         type: 'object',
                         properties: {
@@ -259,11 +290,11 @@ const onboardingTools: Anthropic.Tool[] = [
                     properties: {
                         conversation_summary: {
                             type: 'string',
-                            description: '2-3 sentence summary of the case for the attorney',
+                            description: '2-3 sentence summary of the case for the attorney. Do not use em dashes.',
                         },
                         statute_of_limitations_concern: {
                             type: 'boolean',
-                            description: 'Flag true if the incident date suggests the SOL window may be closing',
+                            description: 'Flag true if the incident date suggests the SOL window may be closing. Do not use em dashes.',
                         },
                         additional_notes: { type: 'string' },
                     },
@@ -348,10 +379,21 @@ function buildStream(
     });
 }
 
-// Route handler
+// Stream route
 export async function POST(req: NextRequest) {
     const body = await req.json().catch(() => null);
-    const { sessionId, messages, transcript, slug, isDemo } = body ?? {};
+    const {
+        sessionId,
+        messages,
+        transcript,
+        slug,
+        clientName,
+        firmName,
+        phone,
+        email,
+        localHour,
+        isDemo
+    } = body ?? {};
 
     // Demo chat
     if (isDemo) {
@@ -363,7 +405,19 @@ export async function POST(req: NextRequest) {
             const stream = anthropic.messages.stream({
                 model: demoModel,
                 max_tokens: 2048,
-                system: [{ type: 'text', text: demoPrompt, cache_control: { type: 'ephemeral' } }],
+                system: [
+                    {
+                        type: 'text',
+                        text: demoPrompt,
+                        cache_control: { type: 'ephemeral' }
+                    },
+                    {
+                        type: 'text',
+                        text: `${greeting(localHour ?? new Date().getUTCHours())}.
+                        You are speaking to a potential client so the greeting needs to be as follows after the time of day greeting:
+                        "Thank you for reaching out to us! How can we help you?"`,
+                    },
+                ],
                 messages: messages.length === 0
                     ? [{ role: 'user', content: 'Begin the chat session.' }]
                     : messages,
@@ -393,8 +447,11 @@ export async function POST(req: NextRequest) {
         return jsonError('slug is required', 400);
     }
 
-    // clientName is stored at session creation in chatRecords, not needed per-turn.
-    // slug is validated above; per-firm prompt injection reserved for V2.
+    if (!clientName || typeof clientName !== 'string') return jsonError('clientName is required', 400);
+    if (!firmName || typeof firmName !== 'string') return jsonError('firmName is required', 400);
+
+    // clientName and firmName are injected into the dynamic system block each turn.
+    // phone and email are passed through for client_identification overlay at session completion.
     let session;
     try {
         session = await getSession(sessionId);
@@ -417,7 +474,19 @@ export async function POST(req: NextRequest) {
         const stream = anthropic.messages.stream({
             model: liveModel,
             max_tokens: 2048,
-            system: [{ type: 'text', text: livePrompt, cache_control: { type: 'ephemeral' } }],
+            system: [
+                {
+                    type: 'text',
+                    text: livePrompt,
+                    cache_control: { type: 'ephemeral' },
+                },
+                {
+                    type: 'text',
+                    text: `Please use the following greeting: 
+                    "${greeting(localHour ?? new Date().getUTCHours())}, ${clientName}.
+                    Thank you for contacting ${firmName}. How can we help you today?"` 
+                },
+            ],
             messages: messages.length === 0
                 ? [{ role: 'user', content: 'Begin the chat session.' }]
                 : messages,
@@ -442,8 +511,7 @@ export async function POST(req: NextRequest) {
 
                 if (!toolBlock) return;
 
-                // Append the final assistant turn to the client transcript.
-                // Extract text blocks only
+                // Append the final assistant turn to the client transcript
                 const finalText = finalMessage.content
                     .filter((b): b is Anthropic.TextBlock => b.type === 'text')
                     .map(b => b.text)
@@ -458,7 +526,16 @@ export async function POST(req: NextRequest) {
                     }] : []),
                 ];
 
-                await updateChatRecord(session.id, toolBlock.input as StructuredData, completeTranscript);
+                const rawData = toolBlock.input as StructuredData;
+                const structuredData: StructuredData = {
+                    ...rawData,
+                    client_identification: {
+                        full_name: clientName ?? rawData.client_identification?.full_name ?? '',
+                        phone: phone || rawData.client_identification?.phone,
+                        email: email || rawData.client_identification?.email,
+                    },
+                };
+                await updateChatRecord(session.id, structuredData, completeTranscript);
                 await completeSession(session.id);
 
                 try {
@@ -467,7 +544,7 @@ export async function POST(req: NextRequest) {
                             `data: ${JSON.stringify({ type: 'session_complete' })}\n\n`
                         )
                     );
-                } catch {}
+                } catch { }
             } catch (err) {
                 console.error('[stream route] Completion pipeline failed:', err);
                 // Session remains active if this fails.

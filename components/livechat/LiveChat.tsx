@@ -11,7 +11,15 @@ export default function LiveChat({ slug, firmName }: LiveChatProps) {
     const [gateFields, setGateFields] = useState({ name: '', phone: '', email: '' });
     const [clientInfo, setClientInfo] = useState<{ name: string; phone: string; email: string } | null>(null);
 
-    const { status, messages, sendMessage, manualEndSession, textRef, cancel, error } = useLiveSession({ slug, clientInfo });
+    const {
+        status,
+        messages,
+        sendMessage,
+        manualEndSession,
+        textRef,
+        cancel,
+        error
+    } = useLiveSession({ slug, firmName, clientInfo });
 
     const messagesEndRef = useRef<HTMLDivElement>(null);
     const inputRef = useRef<HTMLTextAreaElement>(null);
@@ -58,29 +66,28 @@ export default function LiveChat({ slug, firmName }: LiveChatProps) {
                     onSubmit={handleSubmit}
                     exit={{ opacity: 0, x: -25 }}
                     transition={{ duration: 0.5, ease: "easeInOut" }}
-                    className="min-h-150 space-y-2 flex flex-col dark:bg-sky-800/30 rounded-2xl"
+                    className="min-h-96 space-y-2 flex flex-col bg-sky-100 dark:bg-sky-900 p-16 rounded-2xl"
                 >
                     <label
                         htmlFor="client-name"
-                        className="ml-3 mb-1 text-lg text-white dark:text-zinc-300 font-semibold"
+                        className="ml-3 mb-1 text-sm md:text-base text-zinc-700 dark:text-zinc-200 font-semibold"
                     >
                         Please enter your full name
                     </label>
                     <input
-                        autoFocus
                         id="client-name"
                         value={gateFields.name}
                         onChange={(e) => setGateFields(prev => ({ ...prev, name: e.target.value }))}
-                        className="w-full h-10 pl-5 border border-zinc-200 focus:border-zinc-100/10
-                        dark:border-zinc-400 dark:focus:border-zinc-300 text-white dark:text-zinc-300 rounded-lg"
+                        className="w-full h-10 pl-5 outline-1 outline-zinc-700 focus:outline-sky-600
+                        dark:outline-zinc-300 dark:focus:outline-blue-300 text-zinc-700 dark:text-zinc-200 rounded-lg"
                     />
 
                     <label
                         htmlFor="client-phone"
-                        className="ml-3 mt-5 mb-1 text-lg text-white dark:text-zinc-300 font-semibold"
+                        className="ml-3 mt-5 mb-1 text-sm md:text-base text-zinc-700 dark:text-zinc-200 font-semibold"
                     >
                         Phone number
-                        <span className="ml-2 text-sm font-normal text-zinc-300 dark:text-zinc-500">
+                        <span className="ml-2 text-sm text-zinc-500 dark:text-zinc-400">
                             optional
                         </span>
                     </label>
@@ -88,17 +95,17 @@ export default function LiveChat({ slug, firmName }: LiveChatProps) {
                         id="client-phone"
                         type="tel"
                         value={gateFields.phone}
-                        onChange={(e) => setGateFields(prev => ({ ...prev, name: e.target.value }))}
-                        className="w-full h-10 pl-5 border border-zinc-200 focus:border-zinc-100/20
-                        dark:border-zinc-400 dark:focus:border-zinc-300 text-white dark:text-zinc-300 rounded-lg"
+                        onChange={(e) => setGateFields(prev => ({ ...prev, phone: e.target.value }))}
+                        className="w-full h-10 pl-5 outline-1 outline-zinc-700 focus:outline-sky-600
+                        dark:outline-zinc-300 dark:focus:outline-blue-300 text-zinc-700 dark:text-zinc-200 rounded-lg"
                     />
 
                     <label
                         htmlFor="client-email"
-                        className="ml-3 mt-5 mb-1 text-lg text-white dark:text-zinc-300 font-semibold"
+                        className="ml-3 mt-5 mb-1 text-sm md:text-base text-zinc-700 dark:text-zinc-200 font-semibold"
                     >
                         Email address
-                        <span className="ml-2 text-sm font-normal text-zinc-300 dark:text-zinc-500">
+                        <span className="ml-2 text-sm text-zinc-500 dark:text-zinc-400">
                             optional
                         </span>
                     </label>
@@ -106,15 +113,15 @@ export default function LiveChat({ slug, firmName }: LiveChatProps) {
                         id="client-email"
                         type="email"
                         value={gateFields.email}
-                        onChange={(e) => setGateFields(prev => ({ ...prev, name: e.target.value }))}
-                        className="w-full h-10 pl-5 border border-zinc-200 focus:border-zinc-100/50
-                        dark:border-zinc-400 dark:focus:border-zinc-300 text-white dark:text-zinc-300 rounded-lg"
+                        onChange={(e) => setGateFields(prev => ({ ...prev, email: e.target.value }))}
+                        className="w-full h-10 pl-5 outline-1 outline-zinc-700 focus:outline-sky-600
+                        dark:outline-zinc-300 dark:focus:outline-blue-300 text-zinc-700 dark:text-zinc-200 rounded-lg"
                     />
 
                     <button
                         type="submit"
-                        className="mx-auto py-2 w-1/2 bg-zinc-100/90 dark:bg-sky-800 text-sky-700 dark:text-zinc-300
-            hover:bg-white dark:hover:bg-sky-700 transition duration-300 mt-7 cursor-pointer rounded-2xl"
+                        className="mx-auto py-2 w-1/2 bg-sky-700 dark:bg-zinc-300 text-sky-100 dark:text-zinc-700
+                        hover:bg-sky-600 dark:hover:bg-zinc-100/90 transition duration-300 mt-10 cursor-pointer rounded-2xl"
                     >
                         Continue
                     </button>

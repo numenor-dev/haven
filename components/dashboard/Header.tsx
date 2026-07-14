@@ -19,7 +19,7 @@ export default function Header({ firmName, slug, trialStatus }: DashboardHeaderP
 
     return (
         <motion.header
-            className="fixed top-0 left-0 right-0 z-50 border-b border-b-zinc-300 dark:border-zinc-700/80"
+            className="fixed top-0 left-0 right-0 z-50 border-b border-b-zinc-300 dark:border-zinc-700/80 rounded-2xl"
             initial={{ opacity: 0, y: -12 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.4, ease: "easeOut" }}
@@ -30,16 +30,16 @@ export default function Header({ firmName, slug, trialStatus }: DashboardHeaderP
                 style={{ opacity: backdropOpacity }}
             />
 
-            <div className="relative mx-auto px-12 h-16 grid grid-cols-3 items-center">
+            <div className="relative mx-auto px-12 h-16 grid grid-cols-3 items-center gap-x-2">
                 <Link href="/dashboard" className="flex items-center">
                     <span className="text-lg font-semibold tracking-tight text-zinc-800 dark:text-zinc-200">
                         {firmName}
                     </span>
                 </Link>
-                <div className="hidden lg:flex justify-center">
+                <div className="hidden lg:flex ml-[-10%]">
                     <CustomUrlBadge url={customUrl} />
                 </div>
-                <div className="hidden lg:flex items-center gap-5 justify-end">
+                <div className="hidden lg:flex items-center gap-5 ml-2 justify-end">
                     <TrialBadge isTrialExhausted={trialStatus} />
                     <Account />
                     <ThemeToggle />

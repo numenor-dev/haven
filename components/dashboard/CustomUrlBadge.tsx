@@ -13,7 +13,7 @@ export default function CustomUrlBadge({ url }: { url: string }) {
     };
 
     return (
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-x-2">
             <p className="text-sm text-zinc-800 dark:text-zinc-300">
                 Your custom URL:
                 <Link

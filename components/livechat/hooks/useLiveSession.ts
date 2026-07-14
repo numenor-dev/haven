@@ -1,22 +1,17 @@
 'use client';
 
+import { useState, useEffect, useRef, useCallback } from 'react';
+import { useSmoothChat } from '@/components/hooks/useSmoothChat';
+import { useStream } from '@/components/hooks/useStream';
 import {
-    useCallback,
-    useEffect,
-    useState,
-    useRef
-} from "react";
-import {
+    LiveSessionProps,
+    LiveSessionReturn,
     Message,
     SessionStatus,
-    LiveSessionProps,
-    LiveSessionReturn
-} from "@/types/types";
-import { useStream } from "../../hooks/useStream";
-import { useSmoothChat } from "@/components/hooks/useSmoothChat";
+    TranscriptMessage
+} from '@/types/types';
 
-
-export default function useLiveSession({ slug, clientInfo }: LiveSessionProps): LiveSessionReturn {
+export default function useLiveSession({ slug, clientInfo, firmName }: LiveSessionProps): LiveSessionReturn {
     const [status, setStatus] = useState<SessionStatus>('idle');
     const [messages, setMessages] = useState<Message[]>([]);
     const [sessionId, setSessionId] = useState<string | null>(null);
@@ -26,16 +21,13 @@ export default function useLiveSession({ slug, clientInfo }: LiveSessionProps): 
 
     const { textRef, enqueue, reset } = useSmoothChat(() => {
         setStatus('user_turn');
-    })
+    });
 
     const appendToLastMessage = useCallback((text: string) => {
         setMessages((prev) => {
             const updated = [...prev];
             const last = updated[updated.length - 1];
-            updated[updated.length - 1] = {
-                ...last,
-                content: last.content + text,
-            };
+            updated[updated.length - 1] = { ...last, content: last.content + text };
             return updated;
         });
     }, []);
@@ -43,37 +35,28 @@ export default function useLiveSession({ slug, clientInfo }: LiveSessionProps): 
     const onChunk = useCallback((delta: string) => {
         enqueue(delta);
         appendToLastMessage(delta);
-    }, [enqueue, appendToLastMessage])
-
+    }, [enqueue, appendToLastMessage]);
 
     const onComplete = useCallback(() => {
         setMessages((prev) => {
             const updated = [...prev];
             const last = updated[updated.length - 1];
             if (last?.role === 'assistant') {
-                updated[updated.length - 1] = {
-                    ...last,
-                    timestamp: new Date().toISOString(),
-                };
+                updated[updated.length - 1] = { ...last, timestamp: new Date().toISOString() };
             }
             return updated;
         });
     }, []);
-    
-    const onError = useCallback((error: Error) => {
-        console.error('[useLiveSession] Stream error:', error);
-        setError(error);
+
+    const onError = useCallback((err: Error) => {
+        console.error('[useLiveSession] Stream error:', err);
+        setError(err);
         setStatus('error');
     }, []);
 
     const onSessionComplete = useCallback(() => setStatus('complete'), []);
 
-    const { startStream, cancelStream } = useStream({
-        onChunk,
-        onComplete,
-        onError,
-        onSessionComplete
-    });
+    const { startStream, cancelStream } = useStream({ onChunk, onComplete, onError, onSessionComplete });
 
     const cancel = useCallback(() => {
         cancelStream();
@@ -81,6 +64,8 @@ export default function useLiveSession({ slug, clientInfo }: LiveSessionProps): 
     }, [cancelStream, status]);
 
     const start = useCallback(async () => {
+        if (!clientInfo) return;
+
         setStatus('streaming');
 
         try {
@@ -89,14 +74,14 @@ export default function useLiveSession({ slug, clientInfo }: LiveSessionProps): 
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     slug,
-                    clientName: clientInfo?.name,
-                    clientPhone: clientInfo?.phone,
-                    clientEmail: clientInfo?.email
+                    clientName: clientInfo.name,
+                    phone: clientInfo.phone,
+                    email: clientInfo.email,
                 }),
             });
 
             if (!res.ok) {
-                if (res.status === 409) throw new Error('You already have an active trial session in progress.')
+                if (res.status === 409) throw new Error('You already have an active trial session in progress.');
                 const { error } = await res.json().catch(() => ({ error: 'Failed to create session' }));
                 throw new Error(error);
             }
@@ -104,12 +89,22 @@ export default function useLiveSession({ slug, clientInfo }: LiveSessionProps): 
             const session = await res.json();
             setSessionId(session.id);
             setMessages([{ role: 'assistant', content: '' }]);
-            startStream([], { slug, sessionId: session.id, transcript: [] });
+
+            startStream([], {
+                slug,
+                sessionId: session.id,
+                transcript: [],
+                clientName: clientInfo.name,
+                firmName,
+                phone: clientInfo.phone,
+                email: clientInfo.email,
+                localHour: new Date().getHours(),
+            });
         } catch (err) {
             setError(err instanceof Error ? err : new Error('Failed to start session'));
             setStatus('error');
         }
-    }, [slug, clientInfo, startStream]);
+    }, [slug, clientInfo, firmName, startStream]);
 
     useEffect(() => {
         if (!clientInfo || hasStarted.current) return;
@@ -117,57 +112,62 @@ export default function useLiveSession({ slug, clientInfo }: LiveSessionProps): 
         let cancelled = false;
         start().then(() => {
             if (cancelled) {
-                // session created and will mark abandoned or let TTL clean up
+                // Session still created and will be marked abandoned or cleaned up by TTL.
             }
         });
         return () => { cancelled = true; };
     }, [clientInfo, start]);
 
-    const sendMessage = useCallback(
-        (content: string) => {
-            if (status !== 'user_turn' || !sessionId) return;
+    const sendMessage = useCallback((content: string) => {
+        // clientInfo null check narrows the type for startStream call below.
+        if (status !== 'user_turn' || !sessionId || !clientInfo) return;
 
-            const userMessage: Message = {
-                role: 'user',
-                content,
-                timestamp: new Date().toISOString()
-            };
-            const updatedHistory = [...messages, userMessage];
-            const cleanHistory = updatedHistory.map(({ role, content }) => ({ role, content }));
-            setMessages([...updatedHistory, { role: 'assistant', content: '' }]);
-            setStatus('streaming');
-            reset();
-            startStream(cleanHistory, { slug, sessionId, transcript: updatedHistory });
-        },
-        [status, messages, slug, startStream, sessionId, reset]
-    );
+        const userMessage: Message = {
+            role: 'user',
+            content,
+            timestamp: new Date().toISOString(),
+        };
+        const updatedHistory = [...messages, userMessage];
+        const cleanHistory = updatedHistory.map(({ role, content }) => ({ role, content }));
+
+        setMessages([...updatedHistory, { role: 'assistant', content: '' }]);
+        setStatus('streaming');
+        reset();
+
+        startStream(cleanHistory, {
+            slug,
+            sessionId,
+            transcript: updatedHistory.filter((m): m is TranscriptMessage => !!m.timestamp),
+            clientName: clientInfo.name,
+            firmName,
+            phone: clientInfo.phone,
+            email: clientInfo.email,
+            localHour: new Date().getHours(),
+        });
+    }, [status, sessionId, clientInfo, messages, slug, firmName, startStream, reset]);
 
     const manualEndSession = useCallback(async () => {
         setStatus('complete');
-        
         if (!sessionId) return;
 
         try {
-
             const res = await fetch('/api/chat/session', {
                 method: 'PATCH',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
+                headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     sessionId,
-                    transcript: messages,
+                    transcript: messages.filter((m): m is TranscriptMessage => !!m.timestamp),
                     clientName: clientInfo?.name,
-                    clientPhone: clientInfo?.phone,
-                    clientEmail: clientInfo?.email
+                    phone: clientInfo?.phone,
+                    email: clientInfo?.email,
                 }),
             });
 
             if (!res.ok) {
-                console.error('Failed to update session status on the server');
+                console.error('[useLiveSession] Failed to complete session on server');
             }
         } catch (err) {
-            console.error('Error ending session:', err);
+            console.error('[useLiveSession] manualEndSession error:', err);
         }
     }, [sessionId, messages, clientInfo]);
 

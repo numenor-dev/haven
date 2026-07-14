@@ -17,6 +17,7 @@ export type LiveChatProps = {
 export type LiveSessionProps = {
     slug: string;
     clientInfo: { name: string; phone: string; email: string } | null;
+    firmName: string;
 }
 
 export type DemoSessionProps = {
@@ -72,8 +73,20 @@ export type UseStreamProps = {
 }
 
 export type StreamOptions =
-    | { isDemo: true }
-    | { slug: string; sessionId: string; transcript: Message[] }
+    | {
+        isDemo: true;
+        localHour: number;
+    }
+    | {
+        slug: string;
+        sessionId: string;
+        transcript: TranscriptMessage[];
+        clientName: string;
+        firmName: string;
+        phone?: string;
+        email?: string;
+        localHour: number;
+    };
 
 export type UseStreamReturn = {
     startStream: (messageHistory: Message[], options: StreamOptions) => void;

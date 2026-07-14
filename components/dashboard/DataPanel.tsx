@@ -287,7 +287,7 @@ export default function DataPanel({ record, userName }: DataPanelProps) {
 
                 {/* Case summary and complexity flags */}
                 <div className="space-y-3 rounded-xl border border-zinc-200 bg-white p-5 dark:border-zinc-800 dark:bg-zinc-900">
-                    <h3 className="text-[10px] font-semibold uppercase tracking-widest text-zinc-500 dark:text-zinc-400">
+                    <h3 className="text-[11px] font-semibold uppercase tracking-widest text-zinc-500 dark:text-zinc-400">
                         Case Summary
                     </h3>
                     <p className="text-sm leading-relaxed text-zinc-700 dark:text-zinc-300">

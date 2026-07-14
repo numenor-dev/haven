@@ -7,8 +7,8 @@ export function useSmoothChat(onDrained?: () => void) {
     const textRef = useRef<HTMLSpanElement>(null);
     const rawText = useRef('');
     const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+    const fallbackRef = useRef<ReturnType<typeof setTimeout> | null>(null);
     const isMounted = useRef(true);
-
 
     const onDrainedRef = useRef(onDrained);
     useEffect(() => { onDrainedRef.current = onDrained; });
@@ -26,10 +26,10 @@ export function useSmoothChat(onDrained?: () => void) {
         let charsToPop: number;
         let delay: number;
 
-        if (qLen > 100) { charsToPop = 4; delay = 5; }
-        else if (qLen > 50) { charsToPop = 2; delay = 10; }
-        else if (qLen > 20) { charsToPop = 1; delay = 15; }
-        else { charsToPop = 1; delay = 20; }
+        if (qLen > 100) { charsToPop = 8; delay = 5; }
+        else if (qLen > 50) { charsToPop = 6; delay = 8; }
+        else if (qLen > 20) { charsToPop = 4; delay = 12; }
+        else { charsToPop = 2; delay = 16; }
 
         rawText.current += queue.current.splice(0, charsToPop).join('');
 
@@ -42,14 +42,25 @@ export function useSmoothChat(onDrained?: () => void) {
     }, []);
 
     const enqueue = useCallback((chunk: string) => {
-        for (const char of chunk) {
-            queue.current.push(char);
-        }
+    for (const char of chunk) {
+        queue.current.push(char);
+    }
 
-        if (!timerRef.current) {
+    if (!timerRef.current) {
+        if (queue.current.length >= 300) {
+            if (fallbackRef.current) {
+                clearTimeout(fallbackRef.current);
+                fallbackRef.current = null;
+            }
             drain();
+        } else if (!fallbackRef.current) {
+            fallbackRef.current = setTimeout(() => {
+                fallbackRef.current = null;
+                if (!timerRef.current) drain();
+            }, 600);
         }
-    }, [drain]);
+    }
+}, [drain]);
 
     /** Call before each new assistant turn to clear accumulated state. */
     const reset = useCallback(() => {

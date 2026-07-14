@@ -19,7 +19,7 @@ export default function useDemoSession({ isActive }: DemoSessionProps): DemoSess
     const [messages, setMessages] = useState<Message[]>([]);
     const [error, setError] = useState<Error | null>(null);
 
- const { textRef, enqueue, reset } = useSmoothChat(() => {
+    const { textRef, enqueue, reset } = useSmoothChat(() => {
         setStatus('user_turn');
     })
 
@@ -39,7 +39,7 @@ export default function useDemoSession({ isActive }: DemoSessionProps): DemoSess
         enqueue(delta);
         appendToLastMessage(delta);
     }, [enqueue, appendToLastMessage])
-    
+
     const onError = useCallback((error: Error) => {
         console.error('[useLiveSession] Stream error:', error);
         setError(error);
@@ -64,7 +64,12 @@ export default function useDemoSession({ isActive }: DemoSessionProps): DemoSess
         if (status !== "idle") return;
         setStatus("streaming");
         setMessages([{ role: "assistant", content: "" }]);
-        startStream([], { isDemo: true });
+        startStream([],
+            {
+                localHour: new Date().getHours(),
+                isDemo: true
+            }
+        );
     }, [status, startStream]);
 
     const hasStarted = useRef(false);
@@ -74,7 +79,7 @@ export default function useDemoSession({ isActive }: DemoSessionProps): DemoSess
         hasStarted.current = true;
         Promise.resolve().then(start);
 
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [isActive]); // start intentionally omitted since ref guards reinvocation
 
     useEffect(() => {
@@ -93,7 +98,13 @@ export default function useDemoSession({ isActive }: DemoSessionProps): DemoSess
             setMessages([...updatedHistory, { role: "assistant", content: "" }]);
             setStatus("streaming");
             reset();
-            startStream(updatedHistory, { isDemo: true });
+            startStream(
+                updatedHistory,
+                {
+                    localHour: new Date().getHours(),
+                    isDemo: true
+                }
+            );
         },
         [status, messages, startStream, reset]
     );

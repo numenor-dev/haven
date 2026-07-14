@@ -41,8 +41,8 @@ export default function Explainer() {
                     needs to proactively save your time and theirs. Haven will
                     learn the practice area the client is reaching out for,
                     such as workplace injury, bicycle accidents, or pedestrian injury
-                    and then asks contextually based questions for optimum clarity. Then,
-                    a PDF is generated and automatically emailed to the legal team.
+                    and then asks contextually based questions for optimum clarity.
+                    Then, client data is stored cleanly in an intuitive dashboard.
                 </motion.p>
             </div>
             <motion.div
