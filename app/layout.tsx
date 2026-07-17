@@ -2,7 +2,8 @@ import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
 import { cn } from "@/lib/utils";
-import { Providers } from "@/components/providers";
+import { Providers } from "@/components/providers"
+import { GoogleTagManager } from '@next/third-parties/google'
 
 
 const inter = Inter({
@@ -12,7 +13,7 @@ const inter = Inter({
 
 export const metadata: Metadata = {
   title: "Haven",
-  description: "Intelligent client intake for attorneys.",
+  description: "Intelligent client onboarding for attorneys.",
 };
 
 export default function RootLayout({
@@ -26,6 +27,7 @@ export default function RootLayout({
       className={cn("antialiased", inter.variable)}
       suppressHydrationWarning
     >
+      <GoogleTagManager gtmId="G-3ZS0YB5CJ3" />
       <body className="min-h-full font-inter flex flex-col" suppressHydrationWarning>
         <Providers>
           {children}
