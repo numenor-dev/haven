@@ -13,7 +13,7 @@ export default function CustomUrlBadge({ url }: { url: string }) {
     };
 
     return (
-        <div className="flex items-center gap-x-2">
+        <div className="flex items-center space-x-2 -ml-20 xl:ml-0">
             <p className="text-sm text-zinc-800 dark:text-zinc-300">
                 Your custom URL:
                 <Link
@@ -27,8 +27,8 @@ export default function CustomUrlBadge({ url }: { url: string }) {
 
             <button
                 onClick={handleCopy}
-                aria-label="Copy intake URL"
-                className="text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200 transition-colors"
+                aria-label="Copy client onboarding URL"
+                className="text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200 transition-colors mr-5"
             >
                 {copied
                     ? <CheckIcon className="size-3.5 text-emerald-500" />
