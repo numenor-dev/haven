@@ -86,14 +86,13 @@ export default function LiveChat({ slug, firmName }: LiveChatProps) {
                     onSubmit={handleSubmit}
                     exit={{ opacity: 0, x: -25 }}
                     transition={{ duration: 0.5, ease: 'easeInOut' }}
-                    className="w-full max-w-2xl mx-auto flex flex-col rounded-2xl shadow-2xl overflow-hidden"
+                    className="max-w-3xl mx-auto flex flex-col rounded-2xl shadow-2xl overflow-hidden"
                 >
-                    {/* Header band — matches chat window header aesthetic */}
                     <div className="bg-sky-900 dark:bg-sky-950 px-8 py-8">
                         <h2 className="text-xl md:text-2xl font-semibold tracking-tight text-zinc-100">
                             Before we begin
                         </h2>
-                        <p className="mt-1.5 text-base leading-relaxed text-sky-100/80">
+                        <p className="mt-1.5 text-base leading-relaxed text-sky-100/90">
                             This chat session takes around 20 minutes. Your responses are
                             confidential and shared only with your attorney.
                         </p>
@@ -108,7 +107,7 @@ export default function LiveChat({ slug, firmName }: LiveChatProps) {
                             ].map((item, i) => (
                                 <li key={i} className="flex items-start gap-3">
                                     <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-sky-500 dark:bg-sky-400" />
-                                    <span className="text-sm leading-relaxed text-zinc-600 dark:text-zinc-400">
+                                    <span className="text-sm leading-relaxed text-zinc-800 dark:text-zinc-300">
                                         {item}
                                     </span>
                                 </li>
@@ -121,7 +120,7 @@ export default function LiveChat({ slug, firmName }: LiveChatProps) {
                         <div className="flex flex-col gap-1.5">
                             <label
                                 htmlFor="client-name"
-                                className="text-sm font-semibold text-zinc-700 dark:text-zinc-300"
+                                className="text-sm font-semibold text-zinc-800 dark:text-zinc-300"
                             >
                                 Full name
                             </label>
@@ -184,7 +183,7 @@ export default function LiveChat({ slug, firmName }: LiveChatProps) {
                         <button
                             type="submit"
                             className="w-full py-2.5 rounded-xl bg-sky-900 dark:bg-sky-800 text-white text-sm font-semibold
-                            hover:bg-sky-800 dark:hover:bg-sky-700 transition-colors duration-200 cursor-pointer"
+                            hover:bg-sky-800 dark:hover:bg-sky-700 transition-colors duration-500 cursor-pointer"
                         >
                             Begin session
                         </button>

@@ -1,23 +1,16 @@
 import Anthropic from '@anthropic-ai/sdk';
-import type { StructuredData } from '@/types/types';
-import type { Message } from '@/types/types';
+import type { Message, StructuredData } from '@/types/types';
 
 const anthropic = new Anthropic();
 
-const extractionTool: Anthropic.Tool = {
+export const extractionTool: Anthropic.Tool = {
     name: 'extract_chat_session_data',
     description:
-        'Extract structured chat data from a completed personal injury consultation transcript. ' +
-        'Omit optional fields entirely if the topic was not discussed — do not guess or fill with unknowns.',
+        'Extract structured chat data from a completed estate planning consultation. ' +
+        'Omit optional fields entirely if the topic was not discussed.',
     input_schema: {
         type: 'object' as const,
-        required: [
-            'client_identification',
-            'incident_details',
-            'injuries',
-            'scheduling_preference',
-            'session_metadata',
-        ],
+        required: ['client_identification', 'scheduling_preference', 'session_metadata'],
         properties: {
             client_identification: {
                 type: 'object',
@@ -28,103 +21,51 @@ const extractionTool: Anthropic.Tool = {
                     email: { type: 'string' },
                 },
             },
-            incident_details: {
+            family_situation: {
                 type: 'object',
-                required: ['incident_type', 'incident_description'],
                 properties: {
-                    incident_type: {
+                    marital_status: {
                         type: 'string',
-                        enum: [
-                            'motor_vehicle_accident', 'slip_and_fall', 'medical_malpractice',
-                            'workplace_injury', 'product_liability', 'premises_liability',
-                            'wrongful_death', 'other',
-                        ],
+                        enum: ['single', 'married', 'divorced', 'widowed', 'domestic_partnership', 'unknown'],
                     },
-                    incident_description: { type: 'string' },
-                    incident_date: { type: 'string' },
-                    incident_location: { type: 'string' },
-                    police_report_filed: { type: 'boolean' },
-                    witnesses_present: { type: 'boolean' },
-                    photos_or_evidence: { type: 'boolean' },
+                    has_children: { type: 'boolean' },
+                    number_of_children: { type: 'number' },
+                    has_dependents: { type: 'boolean' },
+                    dependent_notes: { type: 'string' },
                 },
             },
-            injuries: {
+            assets_overview: {
                 type: 'object',
-                required: ['injury_description'],
                 properties: {
-                    injury_description: { type: 'string' },
-                    injury_types: {
-                        type: 'array',
-                        items: {
-                            type: 'string',
-                            enum: [
-                                'soft_tissue', 'broken_bones', 'traumatic_brain_injury',
-                                'spinal_injury', 'burns', 'lacerations',
-                                'internal_injuries', 'psychological', 'other',
-                            ],
-                        },
-                    },
-                    current_medical_status: {
+                    has_real_estate: { type: 'boolean' },
+                    has_business_interests: { type: 'boolean' },
+                    has_retirement_accounts: { type: 'boolean' },
+                    has_life_insurance: { type: 'boolean' },
+                    estimated_estate_size: {
                         type: 'string',
-                        enum: ['ongoing_treatment', 'recovered', 'recovering', 'permanent_disability', 'unknown'],
+                        enum: ['under_500k', '500k_to_1m', '1m_to_5m', 'over_5m', 'unknown'],
                     },
-                    surgeries_required: { type: 'boolean' },
-                    hospitalized: { type: 'boolean' },
+                    asset_notes: { type: 'string' },
                 },
             },
-            medical_treatment: {
+            existing_documents: {
                 type: 'object',
                 properties: {
-                    providers_seen: { type: 'string' },
-                    estimated_medical_expenses: {
-                        type: 'string',
-                        enum: ['under_10k', '10k_to_50k', '50k_to_100k', 'over_100k', 'unknown'],
-                    },
-                    ongoing_treatment: { type: 'boolean' },
-                    treatment_notes: { type: 'string' },
+                    has_existing_will: { type: 'boolean' },
+                    has_trust: { type: 'boolean' },
+                    has_power_of_attorney: { type: 'boolean' },
+                    has_healthcare_directive: { type: 'boolean' },
+                    documents_notes: { type: 'string' },
                 },
             },
-            liability: {
+            planning_goals: {
                 type: 'object',
                 properties: {
-                    at_fault_party: { type: 'string' },
-                    client_fault: {
-                        type: 'string',
-                        enum: ['none', 'minimal', 'partial', 'unknown'],
-                    },
-                    multiple_defendants: { type: 'boolean' },
-                },
-            },
-            insurance_information: {
-                type: 'object',
-                properties: {
-                    client_has_insurance: { type: 'boolean' },
-                    at_fault_party_insured: { type: 'boolean' },
-                    claim_filed: { type: 'boolean' },
-                    claim_status: {
-                        type: 'string',
-                        enum: ['not_filed', 'filed_pending', 'denied', 'settlement_offered', 'unknown'],
-                    },
-                    prior_settlement_offered: { type: 'boolean' },
-                },
-            },
-            damages: {
-                type: 'object',
-                properties: {
-                    lost_wages: { type: 'boolean' },
-                    time_missed_from_work: { type: 'string' },
-                    occupation: { type: 'string' },
-                    property_damage: { type: 'boolean' },
-                    property_damage_description: { type: 'string' },
-                    pain_and_suffering: { type: 'string' },
-                },
-            },
-            prior_representation: {
-                type: 'object',
-                properties: {
-                    spoken_with_other_attorneys: { type: 'boolean' },
-                    has_existing_representation: { type: 'boolean' },
-                    prior_claims_or_lawsuits: { type: 'boolean' },
+                    avoid_probate: { type: 'boolean' },
+                    minimize_taxes: { type: 'boolean' },
+                    charitable_giving: { type: 'boolean' },
+                    business_succession: { type: 'boolean' },
+                    goals_notes: { type: 'string' },
                 },
             },
             scheduling_preference: {
@@ -143,23 +84,22 @@ const extractionTool: Anthropic.Tool = {
                     availability_notes: { type: 'string' },
                 },
             },
-            complexity_flags: {
-                type: 'array',
-                items: {
-                    type: 'object',
-                    required: ['topic', 'reason'],
-                    properties: {
-                        topic: { type: 'string' },
-                        reason: { type: 'string' },
-                    },
-                },
-            },
             session_metadata: {
                 type: 'object',
                 required: ['conversation_summary'],
                 properties: {
                     conversation_summary: { type: 'string' },
-                    statute_of_limitations_concern: { type: 'boolean' },
+                    complexity_flags: {
+                        type: 'array',
+                        items: {
+                            type: 'object',
+                            required: ['topic', 'reason'],
+                            properties: {
+                                topic: { type: 'string' },
+                                reason: { type: 'string' },
+                            },
+                        },
+                    },
                     additional_notes: { type: 'string' },
                 },
             },
@@ -178,7 +118,7 @@ export async function extractChatData(
             tool_choice: { type: 'tool', name: 'extract_chat_session_data' },
             tools: [extractionTool],
             system:
-                'You are extracting structured data from a completed personal injury onboarding conversation. ' +
+                'You are extracting structured data from a completed estate planning onboarding conversation. ' +
                 'Be accurate, conservative, and only extract what was explicitly stated. ' +
                 'Do not infer, assume, or fill optional fields with placeholder values.',
 

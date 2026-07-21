@@ -25,13 +25,13 @@ export function formatDate(val: Date | string | null | undefined): string {
     });
 }
 
-export function formatExpenses(val: string | undefined): string {
+export function formatEstateSize(val: string | undefined): string {
     const map: Record<string, string> = {
-        under_10k:    'Under $10,000',
-        '10k_to_50k': '$10,000 – $50,000',
-        '50k_to_100k':'$50,000 – $100,000',
-        over_100k:    'Over $100,000',
-        unknown:      'Unknown',
+        under_500k:  'Under $500,000',
+        '500k_to_1m':'$500,000 – $1,000,000',
+        '1m_to_5m':  '$1,000,000 – $5,000,000',
+        over_5m:     'Over $5,000,000',
+        unknown:     'Unknown',
     };
     return val ? (map[val] ?? formatTitle(val)) : '—';
 }
@@ -39,4 +39,10 @@ export function formatExpenses(val: string | undefined): string {
 export function yesNo(val: boolean | null | undefined): string {
     if (val === null || val === undefined) return '—';
     return val ? 'Yes' : 'No';
+}
+
+export function greeting(localHour: number): string {
+    if (localHour < 12) return 'Good morning';
+    if (localHour < 17) return 'Good afternoon';
+    return 'Good evening';
 }

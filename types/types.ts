@@ -124,27 +124,18 @@ export type CreateChatRecord = {
     clientName: string;
 };
 
-type IncidentType =
-    | 'motor_vehicle_accident'
-    | 'slip_and_fall'
-    | 'workplace_injury'
-    | 'medical_malpractice'
-    | 'dog_bite'
-    | 'product_liability'
-    | 'wrongful_death'
-    | 'other';
+export type FieldProps = {
+    label: string;
+    value: string;
+    className?: string
+};
 
-type InjuryType =
-    | 'soft_tissue'
-    | 'broken_bones'
-    | 'traumatic_brain_injury'
-    | 'spinal_injury'
-    | 'burns'
-    | 'lacerations'
-    | 'internal_injuries'
-    | 'psychological_trauma'
-    | 'wrongful_death'
-    | 'other';
+export type SectionProps = {
+    title: string;
+    icon: React.ElementType;
+    children: React.ReactNode;
+    cols?: 1 | 2
+};
 
 export type StructuredData = {
     client_identification: {
@@ -152,52 +143,34 @@ export type StructuredData = {
         phone?: string;
         email?: string;
     };
-    incident_details: {
-        incident_type: IncidentType;
-        incident_description: string;
-        incident_date?: string;
-        incident_location?: string;
-        police_report_filed?: boolean;
-        witnesses_present?: boolean;
-        photos_or_evidence?: boolean;
+    family_situation?: {
+        marital_status?: 'single' | 'married' | 'divorced' | 'widowed' | 'domestic_partnership' | 'unknown';
+        has_children?: boolean;
+        number_of_children?: number;
+        has_dependents?: boolean;
+        dependent_notes?: string;
     };
-    injuries: {
-        injury_description: string;
-        injury_types?: InjuryType[];
-        current_medical_status?: 'ongoing_treatment' | 'recovered' | 'recovering' | 'permanent_disability' | 'unknown';
-        surgeries_required?: boolean;
-        hospitalized?: boolean;
+    assets_overview?: {
+        has_real_estate?: boolean;
+        has_business_interests?: boolean;
+        has_retirement_accounts?: boolean;
+        has_life_insurance?: boolean;
+        estimated_estate_size?: 'under_500k' | '500k_to_1m' | '1m_to_5m' | 'over_5m' | 'unknown';
+        asset_notes?: string;
     };
-    medical_treatment?: {
-        providers_seen?: string;
-        estimated_medical_expenses?: 'under_10k' | '10k_to_50k' | '50k_to_100k' | 'over_100k' | 'unknown';
-        ongoing_treatment?: boolean;
-        treatment_notes?: string;
+    existing_documents?: {
+        has_existing_will?: boolean;
+        has_trust?: boolean;
+        has_power_of_attorney?: boolean;
+        has_healthcare_directive?: boolean;
+        documents_notes?: string;
     };
-    liability?: {
-        at_fault_party?: string;
-        client_fault?: 'none' | 'minimal' | 'partial' | 'unknown';
-        multiple_defendants?: boolean;
-    };
-    insurance_information?: {
-        client_has_insurance?: boolean;
-        at_fault_party_insured?: boolean;
-        claim_filed?: boolean;
-        claim_status?: 'not_filed' | 'filed_pending' | 'denied' | 'settlement_offered' | 'unknown';
-        prior_settlement_offered?: boolean;
-    };
-    damages?: {
-        lost_wages?: boolean;
-        time_missed_from_work?: string;
-        occupation?: string;
-        property_damage?: boolean;
-        property_damage_description?: string;
-        pain_and_suffering?: string;
-    };
-    prior_representation?: {
-        spoken_with_other_attorneys?: boolean;
-        has_existing_representation?: boolean;
-        prior_claims_or_lawsuits?: boolean;
+    planning_goals?: {
+        avoid_probate?: boolean;
+        minimize_taxes?: boolean;
+        charitable_giving?: boolean;
+        business_succession?: boolean;
+        goals_notes?: string;
     };
     scheduling_preference: {
         preferred_format: 'in_person' | 'video_call' | 'phone_call' | 'no_preference' | 'unknown';
@@ -205,13 +178,9 @@ export type StructuredData = {
         urgency_to_consult?: 'immediate' | 'within_week' | 'within_month' | 'flexible';
         availability_notes?: string;
     };
-    complexity_flags?: Array<{
-        topic: string;
-        reason: string;
-    }>;
     session_metadata: {
         conversation_summary: string;
-        statute_of_limitations_concern?: boolean;
+        complexity_flags?: Array<{ topic: string; reason: string }>;
         additional_notes?: string;
     };
 };
@@ -227,15 +196,6 @@ export type CompleteHook = (
     controller: ReadableStreamDefaultController<Uint8Array>,
     encoder: TextEncoder,
 ) => Promise<void>;
-
-export type FieldProps = { label: string; value: string; className?: string };
-
-export type SectionProps = {
-    title: string;
-    icon: React.ElementType;
-    children: React.ReactNode;
-    cols?: 1 | 2;
-};
 
 export type TranscriptSectionProps = {
     transcript: Message[] | null;

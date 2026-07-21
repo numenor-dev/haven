@@ -112,7 +112,7 @@ export default function useLiveSession({ slug, clientInfo, firmName }: LiveSessi
         let cancelled = false;
         start().then(() => {
             if (cancelled) {
-                // Session still created and will be marked abandoned or cleaned up by TTL.
+                // Session still created and will be marked abandoned or cleaned up by TTL
             }
         });
         return () => { cancelled = true; };

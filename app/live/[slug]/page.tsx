@@ -17,7 +17,7 @@ export default async function ClientPage({ params }: { params: Promise<{ slug: s
     if (!firm) notFound();
 
     const { data: session } = await auth.getSession();
-    
+
     let isAttorney = false;
     if (session?.user?.id) {
         const userFirmId = await getFirmIdForUser(session.user.id);
@@ -29,14 +29,14 @@ export default async function ClientPage({ params }: { params: Promise<{ slug: s
     return (
         <main className="marketing-bg min-h-screen">
             <Header />
-            <div className="flex mx-auto justify-center pt-36 mb-24">
-                <h1 className="text-2xl md:text-4xl font-bold tracking-tighter">
-                    Welcome to {firm.firmName}
+            <div className="flex justify-center mt-32 mb-5">
+                <h1 className="text-3xl md:text-5xl font-serif font-medium tracking-tight text-zinc-950 dark:text-sky-600/90">
+                    Welcome to <i className="text-sky-100 dark:text-sky-100/90">{firm.firmName}</i>
                 </h1>
             </div>
-            <div className="flex flex-col mx-auto gap-y-10 md:gap-x-8 px-7 max-w-3xl">
+            <div className="flex flex-col mx-auto gap-y-10 md:gap-x-8 px-8">
                 {isLockedOut ? (
-                    <ChatUnavailable 
+                    <ChatUnavailable
                         firmPhone={tempPhoneNumber}
                         isOwner={isAttorney}
                         slug={slug}

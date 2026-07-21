@@ -7,9 +7,11 @@ import {
     completeSession,
     isSessionAtLimit,
 } from '@/lib/api/chatSessions';
+import { extractionTool } from '@/lib/api/extraction';
 import { handleApiError } from '@/lib/errors';
 import { CompleteHook, StructuredData, TranscriptMessage } from '@/types/types';
 import { updateChatRecord } from '@/lib/api/chatRecords';
+import { greeting } from '@/lib/utils';
 
 const anthropic = new Anthropic({
     apiKey: process.env.ANTHROPIC_API_KEY,
@@ -19,68 +21,41 @@ const demoModel = 'claude-haiku-4-5-20251001';
 const liveModel = 'claude-sonnet-4-6';
 
 const demoPrompt = `
-You are a warm, professional onboarding assistant for a personal injury law firm in Washington State.
-Your job is to gather key facts an attorney needs before a first consultation. Never, under any circumstances, provide legal advice.
-Be conversational and realistically empathetic. Many clients are stressed or in pain so being overally empathetic
-can be frustrating.
+You are a warm, professional onboarding assistant for an estate planning law firm in Washington State.
 
-JURISDICTION CONTEXT — WASHINGTON STATE:
-- Statute of limitations: 3 years from the date of injury (RCW 4.16.080). If the incident
-  was recent, reassure the client there is time. If it is approaching 3 years, note that
-  the attorney will want to discuss urgency.
-- Pure comparative fault state: a client can recover damages even if partially at fault,
-  though their award is reduced by their percentage of fault. Do not discourage clients
-  who think they were partly responsible.
-- PIP (Personal Injury Protection): Washington insurers are required to offer PIP coverage
-  on auto policies. Ask about PIP status for any auto accident case.
-- Common case types in Washington: auto accidents, slip and fall (premises liability),
-  dog bites (strict liability under RCW 16.08.040), and workplace injuries (L&I / workers comp).
+Your goals and constraints are as follows:
 
-DEMO INSTRUCTIONS:
-You are running a 5 question demo onboarding session. The introduction should always be the one listed below.
-The first question asked should always be the one listed below and then you will need to ask
-contextually appropriate questions depending on their first answer. Never ask more than 5 total
-questions. Never use special characters, emojis, or em dashes in any circumstance. The 5th question should
-always be as follows: "Have you spoken to an attorney yet?"
+Gather key facts from the client before their initial consultation by asking a total of 5 questions.
+Ask ONLY ONE question at a time. You must wait for the user to answer before asking the next question.
+Keep the tone realistically conversational, but brief. The client wants to complete this session quickly.
+The client has already provided their name and email address. Never ask for this information.
 
-After the 5th answer, thank the client warmly, let them know the attorney will review
-their information before the consultation, and end the session by saying exactly:
-"Thank you for the information. We look forward to speaking with you soon."
+The Conversation Flow:
 
+Question 1: Ask what specific estate planning documents they are looking to create (e.g., Will, Trust, Power of Attorney).
+Question 2: Ask if they are currently married or single.
+Question 3: Ask if they have any minor children.
+Question 4: Ask if they own real estate in Washington State.
+Question 5 (Final Question): You must ask this verbatim: "Have you spoken with an attorney yet?"
+
+Handling Legal Questions:
+
+If the user asks ANY questions about the law, their specific legal situation, or legal advice, you must stop the onboarding
+flow and reply verbatim: "I cannot answer legal questions, but our attorneys can. May I have your phone number so an attorney
+can call you?"
+
+Ending the Session:
+
+After the user answers the 5th question, thank them warmly, let them know the attorney will review their information, and end
+the session by replying verbatim: "Thank you for the information. We look forward to speaking with you soon."
 Do not ask any further questions after this closing message.
+
+Formatting Rules:
+
+Never use emojis, markdown formatting (like asterisks or bolding), hashtags, or em dashes. Use standard plain text punctuation only.
 `.trim();
 
-const livePrompt = `
-You are a warm, professional onboarding assistant for a personal injury law firm in Washington State.
-Your job is to gather key facts an attorney needs before a first consultation. Never, under any circumstances, provide legal advice.
-Be conversational and realistically empathetic. Many clients are stressed or in pain so being overally empathetic
-can be frustrating.
-
-JURISDICTION CONTEXT — WASHINGTON STATE:
-- Statute of limitations: 3 years from the date of injury (RCW 4.16.080). If the incident
-was recent, reassure the client there is time. If it is approaching 3 years, note that
-the attorney will want to discuss urgency.
-- Pure comparative fault state: a client can recover damages even if partially at fault,
-though their award is reduced by their percentage of fault. Do not discourage clients
-who think they were partly responsible.
-- PIP (Personal Injury Protection): Washington insurers are required to offer PIP coverage
-on auto policies. Ask about PIP status for any auto accident case.
-- Common case types in Washington: auto accidents, slip and fall (premises liability),
-dog bites (strict liability under RCW 16.08.040), and workplace injuries (L&I / workers comp).
-
-LIVE CHAT INSTRUCTIONS:
-You are running a 5 question onboarding session.
-The first question asked should always be the one listed below and then you will need to ask
-contextually appropriate questions depending on their first answer. Never ask more than 5 total
-questions. Never use special characters, emojis, or em dashes in any circumstance. The 5th question should
-always be as follows: "Have you spoken to an attorney yet?"
-
-After the 5th answer, thank the client warmly, let them know the attorney will review
-their information before the consultation, and end the session by saying exactly:
-"Thank you for the information. We look forward to speaking with you soon."
-
-Do not ask any further questions after this closing message.
-`.trim()
+const livePrompt = demoPrompt;
 
 const sessionLimitMessage = 'It looks this conversation has reached its limit. ' +
     'Please complete the session and an attorney will reach out as soon as possible.'
@@ -92,225 +67,11 @@ const sseHeaders = {
     'X-Accel-Buffering': 'no',
 };
 
-function greeting(localHour: number): string {
-    if (localHour < 12) return 'Good morning';
-    if (localHour < 17) return 'Good afternoon';
-    return 'Good evening';
-}
-
 // Claude calls extract_chat_session_data when the onboarding conversation is complete.
 // completeSession() is called and the session_complete SSE event.
 // The tool input is PDF generation source of truth and is stored in chat_records.structured_data before PDF render.
 // flag_complexity is consolidated here as complexity_flags[] rather than a separate tool call.
 
-const onboardingTools: Anthropic.Tool[] = [
-    {
-        name: 'extract_chat_session_data',
-        description:
-            'Call this when the personal injury onboarding conversation is fully complete. ' +
-            'This extracts structured data for the attorney case report and closes the session. ' +
-            'Only call this ONCE — after gathering all of: incident details, injuries sustained, ' +
-            'medical treatment received, insurance status, and scheduling preference. ' +
-            'Do not call this prematurely.',
-        input_schema: {
-            type: 'object' as const,
-            properties: {
-                client_identification: {
-                    type: 'object',
-                    description: 'Basic client details gathered during onboarding',
-                    properties: {
-                        full_name: { type: 'string' },
-                        phone: { type: 'string' },
-                        email: { type: 'string' },
-                    },
-                    required: ['full_name'],
-                },
-                incident_details: {
-                    type: 'object',
-                    description: 'Details about the incident that caused the injury',
-                    properties: {
-                        incident_type: {
-                            type: 'string',
-                            enum: [
-                                'motor_vehicle_accident',
-                                'slip_and_fall',
-                                'workplace_injury',
-                                'medical_malpractice',
-                                'dog_bite',
-                                'product_liability',
-                                'wrongful_death',
-                                'other',
-                            ],
-                        },
-                        incident_date: {
-                            type: 'string',
-                            description: 'Date of the incident: exact or approximate',
-                        },
-                        incident_location: { type: 'string' },
-                        incident_description: {
-                            type: 'string',
-                            description: 'What happened, in the client\'s own words',
-                        },
-                        police_report_filed: { type: 'boolean' },
-                        witnesses_present: { type: 'boolean' },
-                        photos_or_evidence: { type: 'boolean' },
-                    },
-                    required: ['incident_type', 'incident_description'],
-                },
-                injuries: {
-                    type: 'object',
-                    description: 'Injuries sustained by the client. Do not use em dashes in the description.',
-                    properties: {
-                        injury_types: {
-                            type: 'array',
-                            items: {
-                                type: 'string',
-                                enum: [
-                                    'soft_tissue',
-                                    'broken_bones',
-                                    'traumatic_brain_injury',
-                                    'spinal_injury',
-                                    'burns',
-                                    'lacerations',
-                                    'internal_injuries',
-                                    'psychological_trauma',
-                                    'wrongful_death',
-                                    'other',
-                                ],
-                            },
-                        },
-                        injury_description: { type: 'string' },
-                        current_medical_status: {
-                            type: 'string',
-                            enum: ['ongoing_treatment', 'recovered', 'recovering', 'permanent_disability', 'unknown'],
-                        },
-                        surgeries_required: { type: 'boolean' },
-                        hospitalized: { type: 'boolean' },
-                    },
-                    required: ['injury_description'],
-                },
-                medical_treatment: {
-                    type: 'object',
-                    properties: {
-                        providers_seen: {
-                            type: 'string',
-                            description: 'Medical providers, hospitals, and specialists seen',
-                        },
-                        estimated_medical_expenses: {
-                            type: 'string',
-                            enum: ['under_10k', '10k_to_50k', '50k_to_100k', 'over_100k', 'unknown'],
-                        },
-                        ongoing_treatment: { type: 'boolean' },
-                        treatment_notes: { type: 'string' },
-                    },
-                },
-                liability: {
-                    type: 'object',
-                    properties: {
-                        at_fault_party: {
-                            type: 'string',
-                            description: 'Who was at fault such as other driver, property owner, employer, etc. Do not use em dashes in the description.',
-                        },
-                        client_fault: {
-                            type: 'string',
-                            enum: ['none', 'minimal', 'partial', 'unknown'],
-                            description: 'Client\'s perceived share of fault',
-                        },
-                        multiple_defendants: { type: 'boolean' },
-                    },
-                },
-                insurance_information: {
-                    type: 'object',
-                    properties: {
-                        client_has_insurance: { type: 'boolean' },
-                        at_fault_party_insured: { type: 'boolean' },
-                        claim_filed: { type: 'boolean' },
-                        claim_status: {
-                            type: 'string',
-                            enum: ['not_filed', 'filed_pending', 'denied', 'settlement_offered', 'unknown'],
-                        },
-                        prior_settlement_offered: { type: 'boolean' },
-                    },
-                },
-                damages: {
-                    type: 'object',
-                    properties: {
-                        lost_wages: { type: 'boolean' },
-                        time_missed_from_work: { type: 'string' },
-                        occupation: { type: 'string' },
-                        property_damage: { type: 'boolean' },
-                        property_damage_description: { type: 'string' },
-                        pain_and_suffering: {
-                            type: 'string',
-                            description: 'How the injury has affected the client\'s daily life. Do not use em dashes in the description.',
-                        },
-                    },
-                },
-                prior_representation: {
-                    type: 'object',
-                    properties: {
-                        spoken_with_other_attorneys: { type: 'boolean' },
-                        has_existing_representation: { type: 'boolean' },
-                        prior_claims_or_lawsuits: { type: 'boolean' },
-                    },
-                },
-                scheduling_preference: {
-                    type: 'object',
-                    properties: {
-                        preferred_times: {
-                            type: 'string',
-                            description: 'Days, times, or general availability',
-                        },
-                        preferred_format: {
-                            type: 'string',
-                            enum: ['in_person', 'video_call', 'phone_call', 'no_preference', 'unknown'],
-                        },
-                        urgency_to_consult: {
-                            type: 'string',
-                            enum: ['immediate', 'within_week', 'within_month', 'flexible'],
-                        },
-                        availability_notes: { type: 'string' },
-                    },
-                    required: ['preferred_format'],
-                },
-                complexity_flags: {
-                    type: 'array',
-                    description: 'Issues that may require extended consultation time or specialist attention.',
-                    items: {
-                        type: 'object',
-                        properties: {
-                            topic: { type: 'string' },
-                            reason: { type: 'string' },
-                        },
-                        required: ['topic', 'reason'],
-                    },
-                },
-                session_metadata: {
-                    type: 'object',
-                    properties: {
-                        conversation_summary: {
-                            type: 'string',
-                            description: '2-3 sentence summary of the case for the attorney. Do not use em dashes in the description.',
-                        },
-                        statute_of_limitations_concern: {
-                            type: 'boolean',
-                            description: 'Flag true if the incident date suggests the SOL window may be closing. Do not use em dashes in the description.',
-                        },
-                        additional_notes: { type: 'string' },
-                    },
-                    required: ['conversation_summary'],
-                },
-            },
-            required: [
-                'client_identification',
-                'incident_details',
-                'injuries',
-                'scheduling_preference',
-                'session_metadata',
-            ],
-        },
-    },
-];
 
 function jsonError(message: string, status: number): Response {
     return new Response(JSON.stringify({ error: message }), {
@@ -360,7 +121,7 @@ function buildStream(
                     }
                 }
 
-                // Loop has exited after message_stop. Controller is still open.
+                // Loop has exited after message_stop but controller is still open.
                 // Run the completion hook before finally closes it.
                 if (onMessageStop) await onMessageStop(controller, encoder);
 
@@ -484,13 +245,13 @@ export async function POST(req: NextRequest) {
                     type: 'text',
                     text: `Please use the following greeting: 
                     "${greeting(localHour ?? new Date().getUTCHours())}, ${clientName}.
-                    Thank you for contacting ${firmName}. How can we help you today?"` 
+                    Thank you for contacting ${firmName}. How can we help you today?"`
                 },
             ],
             messages: messages.length === 0
                 ? [{ role: 'user', content: 'Begin the chat session.' }]
                 : messages,
-            tools: onboardingTools,
+            tools: [extractionTool],
         });
 
         stream.on('message', (message) => {

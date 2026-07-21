@@ -7,7 +7,7 @@ import Link from "next/link";
 import { Bars3Icon, XMarkIcon } from "@heroicons/react/24/solid";
 
 const links = [
-    { label: "Features", href: "#features" },
+    { label: "Blog", href: "./blog" },
     { label: "Road Map", href: "#roadmap" },
 ];
 
