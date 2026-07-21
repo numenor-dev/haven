@@ -29,7 +29,7 @@ export default async function ClientPage({ params }: { params: Promise<{ slug: s
     return (
         <main className="marketing-bg min-h-screen">
             <Header />
-            <div className="flex justify-center mt-32 mb-5">
+            <div className="flex justify-center mt-36 mb-16">
                 <h1 className="text-3xl md:text-5xl font-serif font-medium tracking-tight text-zinc-950 dark:text-sky-600/90">
                     Welcome to <i className="text-sky-100 dark:text-sky-100/90">{firm.firmName}</i>
                 </h1>

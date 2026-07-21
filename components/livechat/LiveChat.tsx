@@ -86,7 +86,7 @@ export default function LiveChat({ slug, firmName }: LiveChatProps) {
                     onSubmit={handleSubmit}
                     exit={{ opacity: 0, x: -25 }}
                     transition={{ duration: 0.5, ease: 'easeInOut' }}
-                    className="max-w-3xl mx-auto flex flex-col rounded-2xl shadow-2xl overflow-hidden"
+                    className="max-w-4xl mx-auto flex flex-col rounded-2xl shadow-2xl overflow-hidden"
                 >
                     <div className="bg-sky-900 dark:bg-sky-950 px-8 py-8">
                         <h2 className="text-xl md:text-2xl font-semibold tracking-tight text-zinc-100">
@@ -101,8 +101,8 @@ export default function LiveChat({ slug, firmName }: LiveChatProps) {
                     <div className="bg-zinc-50 dark:bg-zinc-900 px-8 pt-6 pb-2">
                         <ul className="space-y-2.5">
                             {[
-                                'There are no right or wrong answers. Please explain the situation in your own words.',
-                                'Take your time with each response. The session is conversational, not a form.',
+                                'There are no right or wrong answers.',
+                                'Please explain the situation with as many details as possible.',
                                 'Nothing in this conversation constitutes legal advice.',
                             ].map((item, i) => (
                                 <li key={i} className="flex items-start gap-3">

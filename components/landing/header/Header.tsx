@@ -8,7 +8,7 @@ import { Bars3Icon, XMarkIcon } from "@heroicons/react/24/solid";
 
 const links = [
     { label: "Blog", href: "./blog" },
-    { label: "Road Map", href: "#roadmap" },
+    { label: "Road Map", href: "./roadmap" },
 ];
 
 export default function Header() {
