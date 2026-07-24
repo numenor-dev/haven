@@ -1,6 +1,6 @@
 import Header from "@/components/landing/header/Header";
 import Hero from "@/components/landing/Hero";
-import HowItWorks from "@/components/landing/HowItWorks";
+import DemoContainer from "@/components/landing/DemoContainer";
 import Footer from "@/components/landing/Footer";
 
 export default function Home() {
@@ -10,7 +10,7 @@ export default function Home() {
         <div className="relative z-20">
           <Header />
           <Hero />
-          <HowItWorks />
+          <DemoContainer />
           <Footer />
         </div>
       </main>

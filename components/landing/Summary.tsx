@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import Image from "next/image";
 import { motion } from "motion/react";
 
-export default function Explainer() {
+export default function Summary() {
     const [inView, setInView] = useState<boolean>(false);
     const explainerRef = useRef<HTMLDivElement>(null)
 
@@ -24,16 +24,17 @@ export default function Explainer() {
     return (
         <div
             ref={explainerRef}
-            className="grid grid-cols-1 mx-auto space-y-10 px-7 max-w-7xl lg:grid-cols-[4fr_6fr] lg:space-x-12">
+            className="grid grid-cols-1 mx-auto space-y-12 px-7 max-w-7xl lg:grid-cols-[4fr_6fr] lg:space-x-12">
             <div>
                 <motion.h2
-                    className="text-4xl font-semibold tracking-tight"
+                    className="text-4xl font-bold tracking-tight"
                     initial={{ opacity: 0, y: 20 }}
                     animate={inView ? { opacity: 1, y: 0 } : { opacity: 0, y: 12 }}
                     transition={{ duration: 1, ease: "easeOut" }}>
                     Onboarding Automated
                 </motion.h2>
                 <motion.p
+                    className="mt-1"
                     initial={{ opacity: 0, y: 12 }}
                     animate={inView ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
                     transition={{ duration: 1.1, ease: "easeOut" }}>

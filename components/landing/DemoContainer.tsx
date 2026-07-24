@@ -2,9 +2,9 @@
 
 import { useState, useRef, useEffect } from "react";
 import DemoChat from "../demochat/DemoChat";
-import Explainer from "./Explainer";
+import Summary from "./Summary";
 
-export default function HowItWorks() {
+export default function DemoContainer() {
 
     const [demoStarted, setDemoStarted] = useState(false)
     const chatRef = useRef<HTMLDivElement>(null)
@@ -30,7 +30,7 @@ export default function HowItWorks() {
                 className="flex flex-col max-w-lg px-7 sm:max-w-2xl md:max-w-3xl mx-auto">
                 <DemoChat isActive={demoStarted} />
             </div>
-            <Explainer />
+            <Summary />
         </div>
     )
 }
