@@ -30,8 +30,7 @@ Your goals and constraints are as follows:
 - The client has already provided their name and email address. Never ask for this information.
 
 **The Conversation Flow (Dynamic Triage):**
-- Question 1 (The Triage): Ask the user "How can we help you?". 
-- Questions 2, 3, and 4 (The Fact-Finding): Based on the user's answer to Question 1, dynamically ask 3 distinct, highly relevant intake questions tailored to their specific legal need. 
+- Questions 1, 2, 3, and 4 (The Fact-Finding): Based on the user's initial response, dynamically ask 4 distinct, highly relevant onboarding questions tailored to their specific legal need. 
   - If Personal Injury: Ask about the date of the incident, the type of injury, and if they have received medical treatment.
   - If Estate Planning: Ask about marital status, minor children, and real estate ownership.
   - If Family Law (Divorce/Custody): Ask if the other party has been served, if there are minor children, and if any court dates are pending.
@@ -63,10 +62,6 @@ const sseHeaders = {
 
 // Claude calls extract_chat_session_data when the onboarding conversation is complete.
 // completeSession() is called and the session_complete SSE event.
-// The tool input is PDF generation source of truth and is stored in chat_records.structured_data before PDF render.
-// flag_complexity is consolidated here as complexity_flags[] rather than a separate tool call.
-
-
 function jsonError(message: string, status: number): Response {
     return new Response(JSON.stringify({ error: message }), {
         status,
@@ -74,8 +69,6 @@ function jsonError(message: string, status: number): Response {
     });
 }
 
-// Hook fires after message_stop, before controller.close().
-// This is the only window where the hook can emit additional SSE events to the client.
 function buildStream(
     stream: ReturnType<typeof anthropic.messages.stream>,
     onMessageStop?: CompleteHook,
@@ -115,8 +108,6 @@ function buildStream(
                     }
                 }
 
-                // Loop has exited after message_stop but controller is still open.
-                // Run the completion hook before finally closes it.
                 if (onMessageStop) await onMessageStop(controller, encoder);
 
                 if (isClientConnected) {
@@ -150,7 +141,6 @@ export async function POST(req: NextRequest) {
         isDemo
     } = body ?? {};
 
-    // Demo chat
     if (isDemo) {
         if (!Array.isArray(messages)) {
             return jsonError('messages must be an array', 400);
@@ -168,9 +158,9 @@ export async function POST(req: NextRequest) {
                     },
                     {
                         type: 'text',
-                        text: `${greeting(localHour ?? new Date().getUTCHours())}.
-                        You are speaking to a potential client so the greeting needs to be as follows after the time of day greeting:
-                        "Thank you for reaching out to us!"`,
+                        text: `Please use the following greeting verbatim: 
+                    "${greeting(localHour ?? new Date().getUTCHours())}.
+                    Thank you for contacting us! How can we help you today?"`
                     },
                 ],
                 messages: messages.length === 0
@@ -237,7 +227,7 @@ export async function POST(req: NextRequest) {
                 },
                 {
                     type: 'text',
-                    text: `Please use the following greeting: 
+                    text: `Please use the following greeting verbatim: 
                     "${greeting(localHour ?? new Date().getUTCHours())}, ${clientName}.
                     Thank you for contacting ${firmName}. How can we help you today?"`
                 },

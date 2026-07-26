@@ -3,7 +3,7 @@ import { Inter } from "next/font/google";
 import "./globals.css";
 import { cn } from "@/lib/utils";
 import { Providers } from "@/components/providers"
-import { GoogleTagManager } from '@next/third-parties/google'
+import { GoogleAnalytics } from '@next/third-parties/google'
 
 
 const inter = Inter({
@@ -27,7 +27,7 @@ export default function RootLayout({
       className={cn("antialiased", inter.variable)}
       suppressHydrationWarning
     >
-      <GoogleTagManager gtmId="G-3ZS0YB5CJ3" />
+      <GoogleAnalytics gaId={process.env.GA_ID!} />
       <body className="min-h-full font-inter flex flex-col" suppressHydrationWarning>
         <Providers>
           {children}
