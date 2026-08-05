@@ -24,7 +24,7 @@ export default function Summary() {
     return (
         <div
             ref={explainerRef}
-            className="grid grid-cols-1 mx-auto space-y-12 px-7 max-w-7xl lg:grid-cols-[4fr_6fr] lg:space-x-12">
+            className="grid grid-cols-1 mb-28 mx-auto space-y-12 px-7 max-w-7xl lg:grid-cols-[4fr_6fr] lg:space-x-12">
             <div>
                 <motion.h2
                     className="text-4xl font-bold tracking-tight"
