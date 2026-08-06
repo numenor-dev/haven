@@ -29,7 +29,7 @@ export default function Footer() {
                     <Link
                         onClick={link.onClick}
                         href={link.href}
-                        className="text-base text-foreground px-3 py-1.5 rounded-lg hover:bg-foreground/20 hover:dark:bg-sky-900 transition-all duration-200"
+                        className="text-sm text-foreground px-3 py-1.5 rounded-lg hover:bg-foreground/20 hover:dark:bg-sky-900 transition-all duration-200"
                     >
                         {link.label}
                     </Link>

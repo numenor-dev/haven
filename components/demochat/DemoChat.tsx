@@ -32,7 +32,7 @@ export default function DemoChat({ isActive }: DemoSessionProps) {
     };
 
     return (
-        <div className="flex flex-col w-full max-w-2xl mx-auto h-150 rounded-2xl border border-zinc-50 dark:border-zinc-50/50 overflow-hidden shadow-2xl">
+        <div className="flex flex-col w-full max-w-11/12 mx-auto h-150 rounded-2xl border border-white dark:border-zinc-50/50 overflow-hidden shadow-2xl">
 
             {/* Header */}
             <div className="flex items-center space-x-3 px-5 py-5 border-b border-zinc-200/30 dark:border-zinc-200/10">

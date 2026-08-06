@@ -24,10 +24,10 @@ export default function Summary() {
     return (
         <div
             ref={explainerRef}
-            className="grid grid-cols-1 mb-28 mx-auto space-y-12 px-7 max-w-7xl lg:grid-cols-[4fr_6fr] lg:space-x-12">
+            className="grid grid-cols-1 mb-28 pt-3 mx-auto space-y-12 px-7 max-w-7xl lg:grid-cols-[4fr_6fr] lg:space-x-12">
             <div>
                 <motion.h2
-                    className="text-4xl font-bold tracking-tight"
+                    className="text-4xl font-bold tracking-tight text-white dark:text-zinc-50"
                     initial={{ opacity: 0, y: 20 }}
                     animate={inView ? { opacity: 1, y: 0 } : { opacity: 0, y: 12 }}
                     transition={{ duration: 1, ease: "easeOut" }}>

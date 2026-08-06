@@ -127,7 +127,7 @@ export default function LoginPage({ className }: React.ComponentProps<"div">) {
           >
             <div className="flex text-base space-x-1 mx-auto font-semibold tracking-tight">
               <ArrowLongLeftIcon className="size-5 mt-0.5" />
-              <span className="text-zinc-700 dark:text-zinc-300">Go Back</span>
+              <span className="text-zinc-700 dark:text-zinc-300">Go back</span>
             </div>
           </Link>
         </Card>

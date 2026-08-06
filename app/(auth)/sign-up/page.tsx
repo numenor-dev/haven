@@ -129,7 +129,7 @@ export default function SignUpPage({ className }: React.ComponentProps<"div">) {
                     <Link href="/" className="flex w-40 mt-3 mx-auto items-center">
                         <div className="flex text-base space-x-1 mx-auto font-semibold tracking-tight">
                             <ArrowLongLeftIcon className="size-5 mt-0.5" />
-                            <span className="text-zinc-700 dark:text-zinc-300">Go Back</span>
+                            <span className="text-zinc-700 dark:text-zinc-300">Go back</span>
                         </div>
                     </Link>
                 </Card>
