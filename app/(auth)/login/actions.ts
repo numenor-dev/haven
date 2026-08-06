@@ -23,10 +23,15 @@ export async function signInWithEmail(
     }
 
     const { email, password } = result.data;
-    const { error } = await auth.signIn.email({ email, password });
 
-    if (error) {
-        return { error: error.message || 'There was an error signing in. Please try again' };
+    try {
+        const { error } = await auth.signIn.email({ email, password });
+
+        if (error) {
+            return { error: error.message || 'There was an error signing in. Please try again.' };
+        }
+    } catch {
+        return { error: 'There was an error signing in. Please try again.' };
     }
 
     redirect('/dashboard');

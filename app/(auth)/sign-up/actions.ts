@@ -6,6 +6,7 @@ import { z } from 'zod';
 
 const SignUpSchema = z.object({
   name: z.string()
+    .trim()
     .min(2, { message: "Name must be at least 2 characters long." })
     .max(30, { message: "Name cannot exceed 30 characters." }),
   email: z.email('Invalid email address'),
@@ -43,11 +44,15 @@ export async function signUpWithEmail(
   }
 
   const { name, email, password } = result.data;
-  const { error } = await auth.signUp.email({ name, email, password });
 
-  if (error?.status === 422) return { error: 'It looks like you may already have an account' }
+  try {
+    const { error } = await auth.signUp.email({ name, email, password });
 
-  if (error) return { error: error.message || 'Failed to create account' };
+    if (error?.status === 422) return { error: 'It looks like you may already have an account.' };
+    if (error) return { error: error.message || 'Failed to create account.' };
+  } catch {
+    return { error: 'Failed to create account. Please try again.' };
+  }
 
   redirect('/onboarding');
 }
