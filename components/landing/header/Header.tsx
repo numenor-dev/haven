@@ -107,7 +107,7 @@ export default function Header() {
                             transition={{ delay: 0.35 }}
                         >
                             <Link
-                                href="/login"
+                                href="/sign-in"
                                 className="text-sm text-foreground px-3 py-2 rounded-lg bg-white/20 transition-all duration-200"
                             >
                                 Sign In
@@ -201,7 +201,7 @@ export default function Header() {
                                     className="mt-3 pt-3 border-t border-white/10"
                                 >
                                     <Link
-                                        href="/login"
+                                        href="/sign-in"
                                         onClick={closeMenu}
                                         className="block text-sm font-medium px-3 py-3 rounded-lg text-center bg-white/15 hover:bg-white/20 transition-colors"
                                     >

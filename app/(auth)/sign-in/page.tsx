@@ -87,7 +87,7 @@ export default function LoginPage({ className }: React.ComponentProps<"div">) {
                       Password
                     </FieldLabel>
                     <a
-                      href="#"
+                      href="/forgot-password"
                       className="ml-auto inline-block text-sm underline-offset-4 hover:underline"
                     >
                       Forgot password?
@@ -125,9 +125,9 @@ export default function LoginPage({ className }: React.ComponentProps<"div">) {
             href="/"
             className="flex w-40 mt-3 mx-auto items-center"
           >
-            <div className="flex text-base space-x-1 mx-auto font-semibold tracking-tight">
-              <ArrowLongLeftIcon className="size-5 mt-0.5" />
-              <span className="text-zinc-700 dark:text-zinc-300">Go back</span>
+            <div className="flex text-base space-x-1 mx-auto tracking-tight">
+              <ArrowLongLeftIcon className="size-4 mt-0.5" />
+              <span className="text-zinc-700 dark:text-zinc-300 text-sm">Go back</span>
             </div>
           </Link>
         </Card>
