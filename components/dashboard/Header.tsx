@@ -160,9 +160,6 @@ export default function Header({ firmName, slug, trialStatus }: DashboardHeaderP
                                     transition={{ delay: 0.06 + links.length * 0.05 + 0.04 }}
                                     className="mt-2 pt-3 border-t border-white/10"
                                 >
-                                    <p className="px-3 mb-1 text-[10px] font-semibold uppercase tracking-widest text-zinc-500">
-                                        Account
-                                    </p>
                                     <AccountMobile />
                                 </motion.div>
 

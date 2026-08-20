@@ -61,7 +61,7 @@ export default function AccountMobile() {
                     >
                         <div className="space-y-0.5 pb-1 pt-1 pl-3">
                             <Link
-                                href="/dashboard/settings"
+                                href="/dashboard/profile"
                                 className="block rounded-lg px-3 py-2 text-sm text-zinc-300 transition-colors hover:bg-white/10"
                             >
                                 Profile

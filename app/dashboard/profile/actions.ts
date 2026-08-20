@@ -39,7 +39,7 @@ export async function updateName(
     if (!session) return { error: 'Not authenticated' }
 
     const { error } = await client
-        .from('neon_auth.user')
+        .from('neon_auth.users_sync')
         .update({ name })
         .eq('id', session.user.id)
         .select()
@@ -64,26 +64,25 @@ export async function updateFirmName(
         };
     }
 
-    const { firmName } = result.data;
+    const { firmName } = result.data
 
-    const { data: session } = await auth.getSession();
+    const { data: session } = await auth.getSession()
     if (!session) return { error: 'Not authenticated' }
 
-    const { data: attorney, error } = await client
+    const { data: attorney, error: attorneyError } = await client
         .from('attorneys')
         .select('firm_id')
         .eq('neon_auth_user_id', session.user.id)
         .single()
 
-    if (!attorney) return { error: 'Attorney not found' }
+    if (attorneyError || !attorney) return { error: 'Attorney not found.' }
 
-    await client
+    const { error: firmError } = await client
         .from('firms')
         .update({ firm_name: firmName })
         .eq('id', attorney.firm_id)
         .select()
 
-    if (error) return { error: 'An error occurred while updating the firm name. Please try again.' }
-
+    if (firmError) return { error: 'An error occurred while updating the firm name. Please try again.' }
     return { success: true }
 }
