@@ -208,3 +208,8 @@ export type ActionResult = {
 } | {
     success: false; error: string
 };
+
+export type ProfileProps = {
+    currentName: string
+    currentFirm: string
+}

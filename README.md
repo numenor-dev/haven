@@ -195,7 +195,7 @@ lib/
     extraction.ts           # extractChatData -- forced tool call to Anthropic
   auth/
     server.ts               # createNeonAuth()
-    client.ts               # createAuthClient() -- use client
+    client.ts               # createclient() -- use client
   db/
     db.ts                   # Drizzle instance, server-only guarded
     schema.ts               # firms, attorneys, chat_sessions, chat_records

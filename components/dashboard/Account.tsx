@@ -64,7 +64,7 @@ export default function Account() {
                     {/* Nav links */}
                     <div className="py-1">
                         <Link
-                            href="/dashboard"
+                            href="/dashboard/profile"
                             onClick={() => setIsOpen(false)}
                             className="block px-4 py-2 text-sm text-zinc-700 hover:bg-zinc-50 transition-colors duration-200"
                         >
