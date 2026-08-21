@@ -3,6 +3,8 @@ import { auth } from "@/lib/auth/server";
 import { getFirmIdForUser } from "@/lib/dashboard";
 import Onboarding from "@/components/onboarding/Onboarding";
 
+export const dynamic = 'force-dynamic';
+
 export default async function OnboardingPage() {
     const { data: session } = await auth.getSession();
     if (!session?.user) redirect('/login');

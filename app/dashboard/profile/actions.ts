@@ -1,7 +1,12 @@
 'use server';
 
 import { auth } from '@/lib/auth/server'
-import { client } from '@/lib/db/neon';
+import { db } from '@/lib/db/db'
+import { eq } from 'drizzle-orm'
+import { attorneys, firms } from '@/lib/db/schema'
+import { slugify, isFirmNameAvailable } from '@/lib/firm';
+import { revalidatePath } from 'next/cache';
+import { UpdateNameState, UpdateFirmState } from '@/types/types';
 import { z } from 'zod';
 
 const SaveNameSchema = z.object({
@@ -15,13 +20,14 @@ const SaveFirmSchema = z.object({
     firmName:
         z.string()
             .trim()
-            .min(1, { message: "Firm name must be at least 1 letter long." })
+            .min(2, { message: "Firm name must be at least 2 characters." })
+            .max(50, { message: "Firm name cannot exceed 50 characters." })
 })
 
 export async function updateName(
-    _prevState: { error: string } | { success: boolean } | null,
+    _prevState: UpdateNameState,
     formData: FormData
-) {
+): Promise<UpdateNameState> {
 
     const result = SaveNameSchema.safeParse({
         name: formData.get('name'),
@@ -38,21 +44,17 @@ export async function updateName(
     const { data: session } = await auth.getSession();
     if (!session) return { error: 'Not authenticated' }
 
-    const { error } = await client
-        .from('neon_auth.users_sync')
-        .update({ name })
-        .eq('id', session.user.id)
-        .select()
-
+    const { error } = await auth.updateUser({ name })
     if (error) return { error: 'An error occurred while updating your name. Please try again.' }
 
+    revalidatePath('/dashboard/profile')
     return { success: true }
 }
 
 export async function updateFirmName(
-    _prevState: { error: string } | { success: boolean } | null,
+    _prevState: UpdateFirmState,
     formData: FormData
-) {
+): Promise<UpdateFirmState> {
 
     const result = SaveFirmSchema.safeParse({
         firmName: formData.get('firm'),
@@ -64,25 +66,33 @@ export async function updateFirmName(
         };
     }
 
-    const { firmName } = result.data
+    const { firmName } = result.data;
 
-    const { data: session } = await auth.getSession()
+    const { data: session } = await auth.getSession();
     if (!session) return { error: 'Not authenticated' }
 
-    const { data: attorney, error: attorneyError } = await client
-        .from('attorneys')
-        .select('firm_id')
-        .eq('neon_auth_user_id', session.user.id)
-        .single()
+    const slug = slugify(firmName);
+    if (!(await isFirmNameAvailable(slug))) {
+        return { error: `"${firmName}" is already taken. Please try a more specific name.` };
+    }
 
-    if (attorneyError || !attorney) return { error: 'Attorney not found.' }
+    const attorney = await db
+        .select({ firmId: attorneys.firmId })
+        .from(attorneys)
+        .where(eq(attorneys.neonAuthUserId, session.user.id))
+        .limit(1)
+        .then(rows => rows[0] ?? null)
 
-    const { error: firmError } = await client
-        .from('firms')
-        .update({ firm_name: firmName })
-        .eq('id', attorney.firm_id)
-        .select()
+    if (!attorney) return { error: 'Account not found.' }
 
-    if (firmError) return { error: 'An error occurred while updating the firm name. Please try again.' }
+    const [updated] = await db
+        .update(firms)
+        .set({ firmName: firmName, slug: slug })
+        .where(eq(firms.id, attorney.firmId))
+        .returning()
+
+    if (!updated) return { error: 'No account found.' }
+
+    revalidatePath('/dashboard/profile')
     return { success: true }
 }

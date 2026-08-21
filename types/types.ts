@@ -213,3 +213,15 @@ export type ProfileProps = {
     currentName: string
     currentFirm: string
 }
+
+export type UpdateNameState = {
+    error: string
+} | {
+    success: boolean
+} | null
+
+export type UpdateFirmState = {
+    error: string
+} | {
+    success: boolean
+} | null

@@ -4,6 +4,8 @@ import { getFirmDataByUser } from '@/lib/firm';
 import { FirmNotFoundError } from '@/lib/errors';
 import Header from '@/components/dashboard/Header';
 
+export const dynamic = 'force-dynamic';
+
 export default async function DashboardLayout({ children }: { children: React.ReactNode }) {
     const { data: session } = await auth.getSession();
     if (!session?.user) redirect('/login');

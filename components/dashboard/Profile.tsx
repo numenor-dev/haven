@@ -63,7 +63,7 @@ export default function Profile({ currentName, currentFirm }: ProfileProps) {
                                     type="text"
                                     className="h-9 w-full"
                                     autoComplete="name"
-                                    defaultValue={currentName ?? ''}
+                                    defaultValue={currentName}
                                 />
                             </Field>
                         </FieldGroup>
@@ -96,7 +96,7 @@ export default function Profile({ currentName, currentFirm }: ProfileProps) {
                                     type="text"
                                     className="h-9 w-full"
                                     autoComplete="organization"
-                                    defaultValue={currentFirm ?? ''}
+                                    defaultValue={currentFirm}
                                 />
                             </Field>
                         </FieldGroup>
