@@ -7,7 +7,7 @@ export function cn(...inputs: ClassValue[]) {
 
 export function capitalizeName(str: string) {
   const clean = str.replaceAll('-', ' ');
-  return clean.replace(/\b\w/g, letter => letter.toUpperCase())
+  return clean.replace(/\w+/g, w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase());
 }
 
 /** Title Case display label */
