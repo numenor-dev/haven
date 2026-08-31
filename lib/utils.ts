@@ -46,3 +46,12 @@ export function greeting(localHour: number): string {
     if (localHour < 17) return 'Good afternoon';
     return 'Good evening';
 }
+
+export function slugify(name: string): string {
+  return name
+    .toLowerCase()
+    .trim()
+    .replace(/[^a-z0-9\s-]/g, '')
+    .replace(/\s+/g, '-')
+    .replace(/-+/g, '-');
+}

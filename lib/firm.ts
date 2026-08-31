@@ -5,15 +5,6 @@ import { eq } from "drizzle-orm";
 import { FirmSummary } from "@/types/types";
 import { FirmNotFoundError } from "./errors";
 
-export function slugify(name: string): string {
-  return name
-    .toLowerCase()
-    .trim()
-    .replace(/[^a-z0-9\s-]/g, '')
-    .replace(/\s+/g, '-')
-    .replace(/-+/g, '-');
-}
-
 export async function isFirmNameAvailable(slug: string): Promise<boolean> {
   const existing = await db.query.firms.findFirst({ where: eq(firms.slug, slug) });
   return !existing;

@@ -1,22 +1,19 @@
-
 import { describe, expect, it } from 'vitest'
 import {
   capitalizeName,
   formatTitle,
   formatDate,
   formatEstateSize,
-  yesNo
+  yesNo,
+  slugify
 } from '@/lib/utils'
 
-
 describe('capitalizeName', () => {
-
-
   it('capitalizes each word', () => {
     expect(capitalizeName('john doe')).toBe('John Doe')
   })
 
-  it('is idempotent on already-correct input', () => {
+  it('is idempotent on correct input', () => {
     expect(capitalizeName('John Doe')).toBe('John Doe')
   })
 
@@ -38,7 +35,6 @@ describe('capitalizeName', () => {
 })
 
 describe('formatTitle', () => {
-
   it('returns em-dash for null', () => {
     expect(formatTitle(null)).toBe('—')
   })
@@ -69,7 +65,6 @@ describe('formatTitle', () => {
 })
 
 describe('formatDate', () => {
-
   it('returns em-dash for null', () => {
     expect(formatDate(null)).toBe('—')
   })
@@ -103,7 +98,6 @@ describe('formatDate', () => {
 })
 
 describe('formatEstateSize', () => {
-
   it('returns em-dash for undefined', () => {
     expect(formatEstateSize(undefined)).toBe('—')
   })
@@ -124,7 +118,6 @@ describe('formatEstateSize', () => {
 })
 
 describe('yesNo', () => {
-
   it('returns "Yes" for true', () => {
     expect(yesNo(true)).toBe('Yes')
   })
@@ -144,4 +137,23 @@ describe('yesNo', () => {
   it('distinguishes false from null since false means no, not unkown', () => {
     expect(yesNo(false)).not.toBe('—')
   })
+
+
+describe('slugify', () => {
+    it('handles all caps input', () => {
+        expect(slugify('RANDOM LAW FIRM NAME')).toBe('random-law-firm-name')
+    })
+
+    it('is idempotent on correct input', () => {
+        expect(slugify('random-law-firm-name')).toBe('random-law-firm-name')
+    })
+
+    it('filters strings that are not alphanumeric', () => {
+        expect(slugify('R@ndom L*w F!rm Nam$')).toBe('rndom-lw-frm-nam')
+    })
+
+    it('does not error on whitespace only input', () => {
+        expect(() => slugify('    ')).not.toThrow()
+    })
+})
 })

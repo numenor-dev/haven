@@ -4,7 +4,8 @@ import { auth } from '@/lib/auth/server'
 import { db } from '@/lib/db/db'
 import { eq } from 'drizzle-orm'
 import { attorneys, firms } from '@/lib/db/schema'
-import { slugify, isFirmNameAvailable } from '@/lib/firm';
+import { isFirmNameAvailable } from '@/lib/firm';
+import { slugify } from '@/lib/utils';
 import { revalidatePath } from 'next/cache';
 import { UpdateNameState, UpdateFirmState } from '@/types/types';
 import { z } from 'zod';

@@ -4,7 +4,8 @@ import { auth } from "@/lib/auth/server";
 import { randomUUID } from "crypto";
 import { db } from "@/lib/db/db";
 import { firms, attorneys } from "@/lib/db/schema";
-import { slugify, isFirmNameAvailable } from "@/lib/firm";
+import { isFirmNameAvailable } from "@/lib/firm";
+import { slugify } from '@/lib/utils';
 import { redirect } from "next/navigation";
 import { z } from "zod";
 
