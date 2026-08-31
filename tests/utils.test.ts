@@ -1,5 +1,5 @@
 
-import { describe, it, expect } from 'vitest'
+import { describe, expect, it } from 'vitest'
 import {
   capitalizeName,
   formatTitle,
@@ -38,7 +38,7 @@ describe('capitalizeName', () => {
 })
 
 describe('formatTitle', () => {
-  
+
   it('returns em-dash for null', () => {
     expect(formatTitle(null)).toBe('—')
   })
@@ -69,6 +69,7 @@ describe('formatTitle', () => {
 })
 
 describe('formatDate', () => {
+
   it('returns em-dash for null', () => {
     expect(formatDate(null)).toBe('—')
   })
@@ -94,19 +95,25 @@ describe('formatDate', () => {
   it('returns a non-empty, non-dash string for any valid date', () => {
     expect(formatDate(new Date())).not.toBe('—')
   })
+
+  it('handles an invalid date string gracefully', () => {
+    // either a fallback sentinel or a non-crashing string is acceptable
+    expect(() => formatDate('not-a-date')).not.toThrow()
+  })
 })
 
 describe('formatEstateSize', () => {
+
   it('returns em-dash for undefined', () => {
     expect(formatEstateSize(undefined)).toBe('—')
   })
 
   it.each([
-    ['under_500k',  'Under $500,000'],
-    ['500k_to_1m',  '$500,000 – $1,000,000'],
-    ['1m_to_5m',    '$1,000,000 – $5,000,000'],
-    ['over_5m',     'Over $5,000,000'],
-    ['unknown',     'Unknown'],
+    ['under_500k', 'Under $500,000'],
+    ['500k_to_1m', '$500,000 – $1,000,000'],
+    ['1m_to_5m', '$1,000,000 – $5,000,000'],
+    ['over_5m', 'Over $5,000,000'],
+    ['unknown', 'Unknown'],
   ])('maps "%s" to "%s"', (input, expected) => {
     expect(formatEstateSize(input)).toBe(expected)
   })
@@ -117,6 +124,7 @@ describe('formatEstateSize', () => {
 })
 
 describe('yesNo', () => {
+
   it('returns "Yes" for true', () => {
     expect(yesNo(true)).toBe('Yes')
   })
