@@ -1,5 +1,6 @@
 import { defineConfig } from 'vitest/config'
 import react from '@vitejs/plugin-react'
+import { playwright } from '@vitest/browser-playwright'
 
 export default defineConfig({
   plugins: [react()], 
@@ -10,5 +11,9 @@ export default defineConfig({
     globals: true,
     environment: 'jsdom',
     exclude: ['node_modules', '.next'],
+    browser: {
+      provider: playwright(),
+      instances: [{ browser: 'chromium' }]
+    }
   },
 })
