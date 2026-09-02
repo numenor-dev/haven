@@ -43,7 +43,7 @@ export default function SignUpPage({ className }: React.ComponentProps<"div">) {
                 <Card className="dark:bg-zinc-800/50">
                     <CardHeader>
                         <CardTitle className="text-xl mx-auto mt-5 md:text-2xl tracking-tighter">
-                            Create your account
+                            <h1>Create your account</h1>
                         </CardTitle>
                     </CardHeader>
                     <CardContent>
