@@ -55,7 +55,7 @@ export default function Onboarding({ className }: React.ComponentProps<"div">) {
                 <Card className="dark:bg-zinc-800/50">
                     <CardHeader>
                         <CardTitle className="text-xl mx-auto mt-5 md:text-2xl">
-                            Please set up your firm
+                            <h1>Please set up your firm</h1>
                         </CardTitle>
                     </CardHeader>
                     <CardContent>

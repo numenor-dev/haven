@@ -62,7 +62,7 @@ export default function Header({ firmName, slug, trialStatus }: DashboardHeaderP
 
                     <Link href="/dashboard" className="flex items-center">
                         <span className="text-lg font-semibold tracking-tight text-zinc-800 dark:text-zinc-200">
-                            {firmName}
+                            <h1>{firmName}</h1>
                         </span>
                     </Link>
 
