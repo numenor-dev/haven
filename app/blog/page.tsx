@@ -18,7 +18,7 @@ const whyHaven = [
         icon: ShieldCheckIcon,
         title: "Legal Safeguards",
         description:
-            "Haven never offers legal advice and strict rules are enforced at every turn. Your firm is protected from Unauthorized Practice of Law claims while automating the onboarding process.",
+            "Haven never offers legal advice and strict rules are enforced at every turn. Your firm is protected from Unauthorized Practice of Law claims while automating the discovery process.",
     },
     {
         icon: FunnelIcon,
@@ -30,7 +30,7 @@ const whyHaven = [
         icon: LockClosedIcon,
         title: "Client Confidentiality",
         description:
-            "Onboarding data is stored in an isolated, encrypted database specific to your firm. No shared infrastructure and conversation data is never used to train AI models.",
+            "Discovery data is stored in an isolated, encrypted database specific to your firm. No shared infrastructure and conversation data is never used to train AI models.",
     },
 ];
 
@@ -39,13 +39,13 @@ const techChoices = [
         icon: BoltIcon,
         title: "Next.js on Vercel",
         description:
-            "Client onboarding sessions load instantly on any device with no app download required. Server-side rendering means your clients never wait for the page to become interactive.",
+            "Discovery sessions load instantly on any device with no app download required. Server-side rendering means your clients never wait for the page to become interactive.",
     },
     {
         icon: CircleStackIcon,
         title: "Neon PostgreSQL",
         description:
-            "A fully managed, scalable database keeps your firm's onboarding records secure and available. Automatic backups and point-in-time restore mean your data is never at risk.",
+            "A fully managed, scalable database keeps your firm's discovery records secure and available. Automatic backups and point-in-time restore mean your data is never at risk.",
     },
     {
         icon: ChatBubbleLeftRightIcon,
@@ -124,7 +124,7 @@ export default function Blog() {
 
                 <SectionHeader
                     title="Why Choose Haven"
-                    body="Your firm should spend time on clients, not paperwork. We automate onboarding while strictly adhering to legal advertising ethics."
+                    body="Your firm should spend time on clients, not paperwork. Haven eliminates the manual discovery workflow while strictly adhering to legal advertising ethics."
                 />
                 <CardGrid items={whyHaven} />
 

@@ -13,7 +13,7 @@ const inter = Inter({
 
 export const metadata: Metadata = {
   title: "Haven",
-  description: "Intelligent client onboarding for attorneys.",
+  description: "Intelligent client discovery for attorneys.",
 };
 
 export default function RootLayout({

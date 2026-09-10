@@ -14,7 +14,7 @@ const steps = [
     {
         number: "02",
         title: "Try it yourself first",
-        body: "One free, full onboarding session is included with every account. Use it to experience exactly what your clients will see before you share the link.",
+        body: "One free, full discovery session is included with every account. Use it to experience exactly what your clients will see before you share the link.",
     },
     {
         number: "03",

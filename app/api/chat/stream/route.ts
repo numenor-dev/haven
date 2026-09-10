@@ -60,7 +60,7 @@ const sseHeaders = {
     'X-Accel-Buffering': 'no',
 };
 
-// Claude calls extract_chat_session_data when the onboarding conversation is complete.
+// Claude calls extract_chat_session_data when the discovery conversation is complete.
 // completeSession() is called and the session_complete SSE event.
 function jsonError(message: string, status: number): Response {
     return new Response(JSON.stringify({ error: message }), {

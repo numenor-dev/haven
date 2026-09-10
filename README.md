@@ -1,10 +1,8 @@
 # Haven
 
-Intelligent client triage and onboarding for law firms.
+A simplified discovery experience for law firms.
 
-Haven is a standalone SaaS onboarding tool that triages potential clients through a conversational AI session before they ever speak with an attorney. Attorneys sign up, claim a firm slug, and share a branded link. The client answers context-aware questions tailored to their legal need. Once the session ends, structured data is extracted from the conversation and saved to the attorney's dashboard as both a polished PDF and a full chat transcript.
-
-V1 targets personal injury firms. The long-term vision is a practice-area-agnostic triage layer that adapts dynamically to any legal vertical: personal injury, estate planning, family law, and beyond.
+Haven is a full-stack, AI-native platform that accelerates client discovery through a dynamic, conversational AI session before an official consultation from an attorney. Attorneys sign up, enter their firm name, and share a unique link specific only to their firm. Once the potential client recieves the link, they will be able to answer questions tailored to their legal practice area. Once the session ends, data is extracted from the conversation and saved to the attorney's dashboard as a PDF and a full chat transcript.
 
 ---
 
@@ -25,13 +23,11 @@ V1 targets personal injury firms. The long-term vision is a practice-area-agnost
 
 ## Overview
 
-Personal injury clients do not want to fill out a form. They want to speak to an attorney. Haven is designed around that constraint: a short triage session that qualifies the lead and captures the key facts before the consultation begins, without asking the client to commit to anything that feels like paperwork.
+People do not want to fill out a form. They want to speak to an attorney. Haven is designed around that constraint through a short discovery session that qualifies the lead and captures the key facts before the consultation begins, without asking the client to commit to anything that feels like paperwork.
 
 The attorney receives a structured summary in their dashboard the moment the session ends. The transcript is preserved as a backup. The primary deliverable is always the PDF.
 
-Haven is positioned explicitly as an onboarding assistant, not a source of legal advice. All session framing reinforces this.
-
-The V1 product is focused on personal injury because the triage use case fits that vertical cleanly: a few qualifying questions, a quick lead qualification, and a structured summary for the attorney. The same core workflow applies to estate planning consultations, family law inquiries, and other practice areas where attorneys spend time gathering basic facts before the real conversation begins. V2 introduces dynamic triage logic that adapts the session to the client's legal need rather than a fixed practice area.
+Haven is positioned explicitly as a discovery assistant, not a source of legal advice. The prompts are robustly built for legal advice to never be given, no matter the circumstance.
 
 ---
 
@@ -41,31 +37,29 @@ The V1 product is focused on personal injury because the triage use case fits th
 Attorney signs up
         |
         v
-Onboarding creates a firm record and claims a unique slug
+Attorney enters their firm name which creates a firm record and claims a unique slug
         |
         v
-Attorney receives their client-facing URL: gohaven.com/live/[firm-slug]
+Attorney accesses their dashboard and receives their client-facing URL: gohaven.com/live/[firm-slug]
         |
         v
 Attorney sends URL to a potential client
 ("Please complete this before our consultation.")
         |
         v
-Client opens the link -- no account, no login required
+Client opens the link without needing an account
         |
         v
-Conversational AI onboarding session
-  - Personal injury triage questions
-  - Context-sensitive follow-ups based on prior answers
+Conversational AI discovery session
+  - Context aware follow-ups questions based on prior answers
   - Session bounded by turn limit and duration timeout
         |
         v
 Session ends
         |
         |---> Structured data extracted via tool use
-        |---> PDF generated and stored in Vercel Blob
-        |---> Attorney notified via Resend (optional)
-        |---> Chat record saved to attorney dashboard
+        |---> PDF generated and stored in Vercel Blob (coming soon)
+        |---> Raw chat transcript saved to attorney dashboard
 ```
 
 ---
@@ -75,10 +69,10 @@ Session ends
 | Layer            | Technology                                                                         |
 |------------------|------------------------------------------------------------------------------------|
 | Framework        | Next.js 15 App Router, TypeScript                                                  |
-| Styling          | Tailwind CSS v4, Framer Motion, shadcn/ui (zinc/sky palette), Heroicons            |
+| Styling          | Tailwind CSS v4, Framer Motion, shadcn/ui, Heroicons            |
 | Auth             | Neon Auth (Better Auth wrapper), cookie-based, SSR-compatible                      |
-| Database         | Drizzle ORM + Neon serverless PostgreSQL                                           |
-| AI               | Anthropic API -- Claude Sonnet (live sessions), Claude Haiku (demo), streaming + tool use |
+| Database         | Drizzle ORM and Neon serverless PostgreSQL                                           |
+| AI               | Anthropic API: Claude Sonnet (live sessions), Claude Haiku (demo)
 | Validation       | Zod v4                                                                             |
 | Storage          | Vercel Blob (generated PDFs)                                                       |
 | PDF Generation   | pdf-lib                                                                            |
@@ -161,52 +155,157 @@ chat_records
 
 Trial gating lives at the firm level, not the attorney level. `firms.trial_used` is the authoritative flag.
 
-`db.batch()` is used for all atomic multi-table operations. Neon's `neon-http` driver does not support `db.transaction()`, so `db.batch()` is the equivalent pattern for onboarding (firm + attorney insert) and session completion (status flip + trial flag).
+`db.batch()` is used for all atomic multi-table operations. Neon's `neon-http` driver does not support `db.transaction()`, so `db.batch()` is the equivalent pattern for discovery (firm + attorney insert) and session completion (status flip + trial flag).
 
 ---
 
 ## Repository Structure
 
 ```
-app/                        # Next.js App Router -- routes only, no business logic
-  (auth)/                   # Login and sign-up, each with a colocated actions.ts
-  onboarding/               # Create firm, claim slug, debounced live availability check
-  dashboard/                # Attorney dashboard, auth-gated master-detail layout
-  live/[slug]/              # Client-facing onboarding session, no auth required
-  api/
-    auth/[...path]/         # Neon Auth catch-all handler
-    chat/
-      session/              # POST create, GET fetch, PATCH complete
-      stream/               # SSE proxy to Anthropic -- isDemo branch + live branch
-
-components/
-  auth/                     # OAuth sign-in buttons
-  dashboard/                # Header, ClientList, ClientListWrapper, DataPanel
-  demochat/                 # Sandboxed landing-page demo + useDemoSession hook
-  hooks/                    # Shared primitives: useStream, useSmoothChat
-  landing/                  # Marketing page sections
-  livechat/                 # LiveChat orchestrator + useLiveSession hook
-  ui/                       # shadcn/ui primitives and Haven overrides
-
-lib/
-  api/
-    chatSessions.ts         # createSession, getSession, incrementTurn, completeSession
-    chatRecords.ts          # buildCreateChatRecordQuery, getChatRecordBySessionId
-    extraction.ts           # extractChatData -- forced tool call to Anthropic
-  auth/
-    server.ts               # createNeonAuth()
-    client.ts               # createclient() -- use client
-  db/
-    db.ts                   # Drizzle instance, server-only guarded
-    schema.ts               # firms, attorneys, chat_sessions, chat_records
-  dashboard.ts              # getFirmIdForUser, getChatRecords, updateRecordStatus
-  errors.ts                 # AppError subclasses + handleApiError() status-code mapping
-  firm.ts                   # slugify, isFirmNameAvailable, getFirmIdBySlug
-  streaming.ts              # SSE parsing: parseSSELine, getTextDelta, isMessageStop
-  utils.ts                  # cn(), capitalizeName(), shared helpers
-
-types/
-  types.ts                  # SessionStatus, Message, ChatSession, StreamOptions
+haven/
+├── __tests__/                                  # Vitest unit and integration tests
+│   ├── hooks/
+│   │   └── useStream.test.ts
+│   └── lib/
+│       ├── errors.test.ts
+│       ├── firm.test.ts
+│       ├── streaming.test.ts
+│       └── utils.test.ts
+│
+├── .github/
+│   └── workflows/
+│       └── playwright.yml
+│
+├── app/                                        # Next.js App Router — routes only
+│   ├── (auth)/
+│   │   ├── forgot-password/
+│   │   │   ├── page.tsx
+│   │   │   └── actions.ts
+│   │   ├── reset-password/
+│   │   │   ├── page.tsx
+│   │   │   └── actions.ts
+│   │   ├── sign-in/
+│   │   │   ├── page.tsx
+│   │   │   └── actions.ts
+│   │   └── sign-up/
+│   │       ├── page.tsx
+│   │       └── actions.ts
+│   ├── api/
+│   │   ├── auth/
+│   │   │   └── [...path]/
+│   │   │       └── route.ts
+│   │   └── chat/
+│   │       ├── session/
+│   │       │   └── route.ts
+│   │       └── stream/
+│   │           └── route.ts
+│   ├── blog/
+│   ├── dashboard/
+│   │   ├── layout.tsx
+│   │   └── page.tsx
+│   ├── howitworks/
+│   │   └── page.tsx
+│   ├── live/
+│   │   └── [slug]/
+│   │       ├── page.tsx
+│   │       └── loading.tsx
+│   ├── onboarding/
+│   │   ├── actions.ts
+│   │   └── page.tsx
+│   ├── globals.css
+│   ├── icon.svg
+│   ├── layout.tsx
+│   └── page.tsx
+│
+├── components/
+│   ├── auth/
+│   │   └── SignInProviders.tsx
+│   ├── dashboard/
+│   │   ├── Header.tsx
+│   │   ├── ClientList.tsx
+│   │   ├── ClientListWrapper.tsx
+│   │   └── DataPanel.tsx
+│   ├── demochat/
+│   │   ├── DemoChat.tsx
+│   │   └── hooks/
+│   │       └── useDemoSession.ts
+│   ├── hooks/
+│   │   ├── useStream.ts
+│   │   └── useTypewriter.ts
+│   ├── landing/
+│   │   ├── header/
+│   │   │   ├── Header.tsx
+│   │   │   ├── Features.tsx
+│   │   │   └── Scope.tsx
+│   │   ├── DemoContainer.tsx
+│   │   ├── Footer.tsx
+│   │   ├── Hero.tsx
+│   │   ├── HowItWorks.tsx
+│   │   └── Summary.tsx
+│   ├── livechat/
+│   │   ├── LiveChat.tsx
+│   │   ├── Header.tsx
+│   │   ├── Expectations.tsx
+│   │   └── hooks/
+│   │       └── useLiveSession.ts
+│   ├── onboarding/
+│   │   └── Onboarding.tsx
+│   └── ui/
+│       ├── button.tsx
+│       ├── card.tsx
+│       ├── field.tsx
+│       ├── input.tsx
+│       ├── label.tsx
+│       ├── loading.tsx
+│       ├── providers.tsx
+│       ├── separator.tsx
+│       ├── sonner.tsx
+│       └── themetoggle.tsx
+│
+├── drizzle/
+│   ├── 0000_init.sql
+│   └── meta/
+│
+├── lib/
+│   ├── api/
+│   │   ├── chatRecords.ts
+│   │   └── chatSessions.ts
+│   ├── auth/
+│   │   ├── client.ts
+│   │   └── server.ts
+│   ├── db/
+│   │   ├── db.ts
+│   │   └── schema.ts
+│   ├── dashboard.ts
+│   ├── errors.ts
+│   ├── firm.ts
+│   ├── streaming.ts
+│   └── utils.ts
+│
+├── public/
+│   └── dashboard.png
+│
+├── tests/                                      # Playwright E2E tests
+│   ├── onboarding.spec.ts
+│   └── sign-up.spec.ts
+│
+├── types/
+│   └── types.ts
+│
+├── AGENTS.md
+├── ARCHITECTURE.md
+├── CLAUDE.md
+├── components.json
+├── drizzle.config.ts
+├── eslint.config.mjs
+├── next.config.ts
+├── package.json
+├── playwright.config.ts
+├── proxy.ts
+├── tsconfig.json
+├── vitest.config.ts
+├── vitest.setup.ts
+└── yarn.lock
 ```
 
 ---
@@ -275,7 +374,7 @@ The landing page at `/` runs an embedded demo chat using Claude Haiku. No databa
 
 **URL state over useState for dashboard selection.** `/dashboard?chat=id` over client state for the selected session. This enables shareable links, browser back/forward, and eliminates hydration complexity. The server component reads `searchParams` and passes the selected ID down.
 
-**DB-level authority for slug uniqueness.** The slug `UNIQUE` constraint is the enforcing gate. The live availability check in onboarding is advisory UX only. The database is always authoritative.
+**DB-level authority for slug uniqueness.** The slug `UNIQUE` constraint is the enforcing gate. The live availability check in discovery is advisory UX only. The database is always authoritative.
 
 **server-only guards on all server modules.** `lib/db/db.ts` and other server modules import `server-only` to prevent client bundle contamination. The guard throws at build time if a server module is accidentally imported in a client component.
 
@@ -287,56 +386,20 @@ The landing page at `/` runs an embedded demo chat using Claude Haiku. No databa
 
 This project serves three goals, listed in order of priority:
 
-1. Portfolio: demonstrate senior-level full-stack AI engineering -- streaming, tool use, prompt caching, structured extraction, and SaaS product architecture
+1. Portfolio: demonstrate senior-level full-stack AI engineering from LLM/API streaming, tool use, prompt caching, structured extraction, and SaaS product architecture
 2. Skill development: hands-on depth in the Anthropic API, SSE streaming in Next.js, agentic tool use patterns, and serverless Postgres constraints
-3. Product: a shippable MVP targeting personal injury firms, with a clear path to a multi-vertical triage platform in V2
+3. Product: a shippable MVP that dynamically adapts to any legal industry
 
-The competitive moat is designed to come from proprietary domain knowledge built through real attorney relationships, not from code secrecy. The repository is public.
-
----
-
-## V1 Status
-
-Built and working:
-
-- Auth flow: sign-up, login, OAuth (Google/GitHub)
-- Onboarding: firm creation, slug claiming with live availability check, atomic firm + attorney insert
-- Full streaming pipeline: `LiveChat`, `useLiveSession`, `useStream`, `lib/streaming.ts`, `api/chat/stream`
-- Demo chat: sandboxed landing-page session with `useDemoSession`, no database backing
-- Session management: create, fetch, increment turn, complete
-- Structured data extraction: `extractChatData` via forced tool call
-- Dashboard: `ClientList`, `DataPanel`, URL-based selection, status updates with optimistic UI
-- Trial gating: firm-level, `TrialExhaustedError`
-- Error hierarchy: `AppError` subclasses with `handleApiError()`
-
-In progress or pending for V1 completion:
-
-- Wire `getFirmIdBySlug` into `/live/[slug]` (currently validated against a hardcoded test array)
-- PDF generation via pdf-lib, stored to Vercel Blob
-- Structured extraction wired to `completeSession()` trigger
-- Email delivery via Resend on session completion
-- Swap placeholder prompt content to final personal injury prompt
-- Diverge `livePrompt` from `demoPrompt`
-- Complete `DataPanel` (transcript viewer, structured data display, PDF inline render)
-
----
-
-## V2 Roadmap
-
-The headline V2 investment is intelligent multi-vertical triage. Rather than a fixed personal injury session, Haven dynamically adapts to the client's legal need based on firm configuration and session context. The attorney configures which practice areas their firm handles during onboarding. The AI uses that context to shape the conversation from the first message.
-
-This changes the extraction schema, the PDF template, and the prompt architecture. Each practice area has a distinct set of qualifying questions and structured output fields. The core streaming pipeline, session management, and dashboard remain unchanged.
 
 ---
 
 ## Design Principles
 
-The client-facing interface is used by individuals who have recently been injured and are seeking legal help. The UI must project calm, clarity, and competence. Every design decision flows from that context.
+The client-facing UI is used by individuals who have are ultimately seeking legal help and may be anxious or stressed. Haven is built to provide a calm and reassuring experience. Every design decision flows from that context.
 
-- Premium, minimal aesthetic: no playful patterns, no chatbot branding
+- Premium, minimal aesthetic
 - No legal jargon in client-facing copy
-- Explicit onboarding framing on every screen: this is an assistant, not legal advice
-- The PDF is the hero artifact. The transcript is the safety net.
+- Explicit framing on every screen to let the client know that this is an assistant and does not provide legal advice
 
 ---
 
