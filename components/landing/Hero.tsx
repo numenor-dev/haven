@@ -42,12 +42,12 @@ export default function Hero() {
         <div className="flex flex-col items-center space-y-3 xl:space-y-5 mt-48 mb-20">
             <h1 className="
             text-4xl md:text-5xl xl:text-6xl text-white dark:text-zinc-200 font-semibold tracking-tighter
-            leading-12 md:leading-16 max-w-sm sm:max-w-2xl md:max-w-lg xl:max-w-2xl text-center"
+            leading-12 md:leading-16 max-w-sm sm:max-w-2xl md:max-w-lg xl:max-w-xl text-center"
             >
-                The Intelligent Onboarding Workflow
+                The Intelligent Discovery Workflow
             </h1>
             <p className="text-white dark:text-zinc-200 text-xl max-w-sm md:max-w-lg text-center">
-                Safe and efficient client onboarding that helps law firms hit the ground running with potential clients
+                A simplified experience that accelerates client discovery for law firms
             </p>
             <form
                 noValidate
