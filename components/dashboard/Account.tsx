@@ -50,7 +50,7 @@ export default function Account() {
             </button>
 
             {isOpen && (
-                <div className="absolute right-0 mt-2 w-56 bg-white rounded-lg shadow-lg border border-zinc-100 py-1 z-50">
+                <div className="absolute right-0 mt-2 w-56 bg-white dark:bg-zinc-900 rounded-lg shadow-lg border border-zinc-100 dark:border-zinc-700 py-1 z-50">
                     {/* User identity */}
                     <div className="px-4 py-2.5 border-b border-zinc-100">
                         {userName && (
@@ -66,18 +66,17 @@ export default function Account() {
                         <Link
                             href="/dashboard/profile"
                             onClick={() => setIsOpen(false)}
-                            className="block px-4 py-2 text-sm text-zinc-700 hover:bg-zinc-50 transition-colors duration-200"
+                            className="block px-4 py-2 text-sm text-zinc-700 hover:bg-zinc-50 dark:hover:bg-zinc-500 transition-colors duration-200"
                         >
                             Profile
                         </Link>
                     </div>
 
-                    {/* Async for clean sign out */}
                     <div className="border-t border-zinc-100 py-1">
                         <button
                             onClick={handleSignOut}
                             disabled={isSigningOut}
-                            className="w-full text-left px-4 py-2 text-sm text-zinc-700 hover:bg-zinc-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                            className="w-full text-left px-4 py-2 text-sm text-zinc-700 hover:bg-zinc-50 dark:hover:bg-zinc-500 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                         >
                             {isSigningOut ? 'Signing out…' : 'Sign Out'}
                         </button>

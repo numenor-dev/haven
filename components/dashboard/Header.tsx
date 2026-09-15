@@ -58,7 +58,7 @@ export default function Header({ firmName, slug, trialStatus }: DashboardHeaderP
                 />
 
                 {/* Main row */}
-                <div className="relative mx-auto px-12 h-16 grid grid-cols-2 lg:grid-cols-3 items-center gap-x-2">
+                <div className="relative mx-auto px-12 h-16 grid grid-cols-2 lg:grid-cols-3 items-center border-b border-zinc-300 dark:border-zinc-700/80 gap-x-2">
 
                     <Link href="/dashboard" className="flex items-center">
                         <span className="text-lg font-semibold tracking-tight text-zinc-800 dark:text-zinc-200">
@@ -127,7 +127,7 @@ export default function Header({ firmName, slug, trialStatus }: DashboardHeaderP
                             className="relative lg:hidden overflow-hidden"
                         >
                             {/* Dropdown background */}
-                            <div className="absolute inset-0 bg-zinc-900/95 dark:bg-zinc-950/98 backdrop-blur-2xl" />
+                            <div className="absolute inset-0 bg-zinc-100 dark:bg-zinc-950/98 backdrop-blur-2xl" />
 
                             <div className="relative border-t border-white/10 px-4 pt-2 pb-5">
 
@@ -145,7 +145,7 @@ export default function Header({ firmName, slug, trialStatus }: DashboardHeaderP
                                                 target="_blank"
                                                 rel="noopener noreferrer"
                                                 onClick={closeMenu}
-                                                className="block text-sm font-medium px-3 py-3 rounded-lg text-zinc-200 hover:bg-white/10 transition-colors"
+                                                className="block text-sm font-medium px-3 py-3 rounded-lg text-zinc-800 dark:text-zinc-200 hover:bg-white/10 transition-colors"
                                             >
                                                 {label}
                                             </Link>

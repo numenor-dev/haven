@@ -34,12 +34,12 @@ export default function AccountMobile() {
             >
                 <div className="min-w-0">
                     {userName && (
-                        <p className="truncate text-sm font-medium text-zinc-200">
+                        <p className="truncate text-sm font-medium text-zinc-800 dark:text-zinc-200">
                             {userName}
                         </p>
                     )}
                     {userEmail && (
-                        <p className="truncate text-xs text-zinc-400">
+                        <p className="truncate text-xs text-zinc-500 dark:text-zinc-400">
                             {userEmail}
                         </p>
                     )}
@@ -62,14 +62,14 @@ export default function AccountMobile() {
                         <div className="space-y-0.5 pb-1 pt-1 pl-3">
                             <Link
                                 href="/dashboard/profile"
-                                className="block rounded-lg px-3 py-2 text-sm text-zinc-300 transition-colors hover:bg-white/10"
+                                className="block rounded-lg px-3 py-2 text-sm text-zinc-800 dark:text-zinc-200 transition-colors hover:bg-white/10"
                             >
                                 Profile
                             </Link>
                             <button
                                 onClick={handleSignOut}
                                 disabled={isSigningOut}
-                                className="w-full rounded-lg px-3 py-2 text-left text-sm text-zinc-300 transition-colors hover:bg-white/10 disabled:cursor-not-allowed disabled:opacity-50"
+                                className="w-full rounded-lg px-3 py-2 text-left text-sm text-zinc-800 dark:text-zinc-200 transition-colors hover:bg-white/10 disabled:cursor-not-allowed disabled:opacity-50"
                             >
                                 {isSigningOut ? 'Signing out…' : 'Sign out'}
                             </button>
