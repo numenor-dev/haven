@@ -6516,6 +6516,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"cn@npm:^0.3.0":
+  version: 0.3.0
+  resolution: "cn@npm:0.3.0"
+  bin:
+    cn: bin/cn.mjs
+  checksum: 10c0/dbdfb8b5ff7873dd8a094352191a008dbe7adc9bda6ac2c5d9b017b62a98b5201ca7a9bfaaaf0a6e1c6c48925ca9df62028b0225426f5154d9f7f8946ed5390d
+  languageName: node
+  linkType: hard
+
 "code-block-writer@npm:^13.0.3":
   version: 13.0.3
   resolution: "code-block-writer@npm:13.0.3"
@@ -8612,6 +8621,7 @@ __metadata:
     "@vitest/browser-playwright": "npm:^4.1.11"
     class-variance-authority: "npm:^0.7.1"
     clsx: "npm:^2.1.1"
+    cn: "npm:^0.3.0"
     dotenv: "npm:^17.4.2"
     drizzle-kit: "npm:^0.31.10"
     drizzle-orm: "npm:^0.45.2"

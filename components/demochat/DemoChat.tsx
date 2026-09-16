@@ -4,7 +4,7 @@ import { useRef } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { DemoSessionProps } from "@/types/types";
 import useDemoSession from "./hooks/useDemoSession";
-import StreamingIndicator from "../ui/loading";
+import StreamingIndicator from "../ui/streaming";
 import { ArrowUpIcon, StopIcon } from "@heroicons/react/24/solid";
 
 export default function DemoChat({ isActive }: DemoSessionProps) {

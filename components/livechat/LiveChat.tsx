@@ -4,7 +4,7 @@ import { useRef, useEffect, useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { LiveChatProps } from "@/types/types";
 import useLiveSession from "./hooks/useLiveSession";
-import StreamingIndicator from "../ui/loading";
+import StreamingIndicator from "../ui/streaming";
 import { ArrowUpIcon, StopIcon } from "@heroicons/react/24/solid";
 import { toast } from "sonner";
 

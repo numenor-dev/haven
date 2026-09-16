@@ -2,7 +2,6 @@
 
 import { useState, useEffect, useTransition } from 'react';
 import {
-    DocumentArrowDownIcon,
     ExclamationTriangleIcon,
     ChevronDownIcon,
     ChevronUpIcon,
@@ -219,18 +218,6 @@ export default function DataPanel({ record, userName }: DataPanelProps) {
                         >
                             {recordStatus === 'new' ? 'Mark as reviewed' : 'Mark as new'}
                         </button>
-                        {record.pdfUrl ? (
-                            <a
-                                href={record.pdfUrl}
-                                download
-                                className="flex items-center gap-1.5 rounded-lg bg-zinc-900 px-3 py-1.5 text-sm font-medium text-white transition-colors hover:bg-zinc-700 dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-zinc-300"
-                            >
-                                <DocumentArrowDownIcon className="h-4 w-4" />
-                                Download PDF
-                            </a>
-                        ) : (
-                            <span className="text-xs italic text-zinc-400 dark:text-zinc-500">PDF pending</span>
-                        )}
                     </div>
                 </div>
             </div>
