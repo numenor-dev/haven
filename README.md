@@ -2,7 +2,7 @@
 
 A simplified discovery experience for law firms.
 
-Haven is a full-stack, AI-native platform that accelerates client discovery through a dynamic, conversational AI session before an official consultation from an attorney. Attorneys sign up, enter their firm name, and share a unique link specific only to their firm. Once the potential client recieves the link, they will be able to answer questions tailored to their legal practice area. Once the session ends, data is extracted from the conversation and saved to the attorney's dashboard as a PDF and a full chat transcript.
+Haven is a full-stack, AI-native platform that accelerates client discovery through a dynamic, conversational AI session before an official consultation from an attorney. Attorneys sign up, enter their firm name, and share a unique link specific only to their firm. Once the potential client recieves the link, they will be able to answer questions tailored to their legal practice area. Once the session ends, data is extracted from the conversation and saved to the attorney's dashboard.
 
 ---
 
@@ -25,7 +25,7 @@ Haven is a full-stack, AI-native platform that accelerates client discovery thro
 
 People do not want to fill out a form. They want to speak to an attorney. Haven is designed around that constraint through a short discovery session that qualifies the lead and captures the key facts before the consultation begins, without asking the client to commit to anything that feels like paperwork.
 
-The attorney receives a structured summary in their dashboard the moment the session ends. The transcript is preserved as a backup. The primary deliverable is always the PDF.
+The attorney receives a structured summary in their dashboard the moment the session ends. The transcript is preserved as a backup.
 
 Haven is positioned explicitly as a discovery assistant, not a source of legal advice. The prompts are robustly built for legal advice to never be given, no matter the circumstance.
 
@@ -58,7 +58,6 @@ Conversational AI discovery session
 Session ends
         |
         |---> Structured data extracted via tool use
-        |---> PDF generated and stored in Vercel Blob (coming soon)
         |---> Raw chat transcript saved to attorney dashboard
 ```
 
@@ -74,8 +73,6 @@ Session ends
 | Database         | Drizzle ORM and Neon serverless PostgreSQL                                           |
 | AI               | Anthropic API: Claude Sonnet (live sessions), Claude Haiku (demo)
 | Validation       | Zod v4                                                                             |
-| Storage          | Vercel Blob (generated PDFs)                                                       |
-| PDF Generation   | pdf-lib                                                                            |
 | Email Delivery   | Resend (via Next.js server-side Route Handlers)                                    |
 | Notifications    | Sonner                                                                             |
 | Deployment       | Vercel (single Next.js monorepo, no separate backend)                              |
@@ -116,7 +113,7 @@ Client (useStream.ts)                     Server (api/chat/stream/route.ts)
 
 ### Structured Extraction via Tool Use
 
-At session end, Claude uses Anthropic's forced tool call API to convert the full conversation into structured data. The `extractChatData` function maps the transcript to a typed schema covering client identification, incident facts, injury details, and scheduling preference. Pre-chat gate fields (client name, phone, email) are overlaid deterministically after extraction rather than inferred. The extracted payload is the source of truth for PDF generation -- the transcript is not re-parsed.
+At session end, Claude uses Anthropic's forced tool call API to convert the full conversation into structured data. The `extractChatData` function maps the transcript to a typed schema covering client identification, incident facts, injury details, and scheduling preference. Pre-chat gate fields (client name, phone, email) are overlaid deterministically after extraction rather than inferred.
 
 ### Prompt Caching
 
@@ -148,7 +145,6 @@ chat_sessions
 
 chat_records
   id · session_id (FK -> chat_sessions) · structured_data (JSONB)
-  pdf_url · status ('new' | 'reviewed') · created_at
 ```
 
 `attorney_id` on `chat_sessions` is nullable. Anonymous client sessions never carry one. An attorney visiting their firm's `/live/[slug]` URL while authenticated is what sets `attorney_id` and triggers the trial flow.

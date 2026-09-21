@@ -31,7 +31,7 @@ export default function Summary() {
                     initial={{ opacity: 0, y: 20 }}
                     animate={inView ? { opacity: 1, y: 0 } : { opacity: 0, y: 12 }}
                     transition={{ duration: 1, ease: "easeOut" }}>
-                    Onboarding Automated
+                    Discovery Automated
                 </motion.h2>
                 <motion.p
                     className="mt-1"
@@ -41,7 +41,7 @@ export default function Summary() {
                     Haven intelligently captures client
                     needs to proactively save your time and theirs. Haven will
                     learn the practice area the client is reaching out for,
-                    such as workplace injury, bicycle accidents, or pedestrian injury
+                    such as personal injury, estate planning, or family law
                     and then asks contextually based questions for optimum clarity.
                     Then, client data is stored cleanly in an intuitive dashboard.
                 </motion.p>

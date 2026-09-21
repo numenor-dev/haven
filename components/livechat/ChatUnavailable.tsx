@@ -7,10 +7,10 @@ interface ChatUnavailableProps {
     slug: string;
 }
 
-export default function ChatUnavailable({ isOwner, slug }: ChatUnavailableProps) {
+export default function ChatUnavailable({ isOwner }: ChatUnavailableProps) {
     return (
         <div className="flex flex-col items-center justify-center p-8 bg-gray-50 rounded-xl border border-gray-200 text-center h-full min-h-100">
-            <h2 className="text-xl font-semibold mb-2">Live Chat is Offline</h2>
+            <h2 className="text-xl font-semibold mb-2 text-zinc-400">Live Chat is Offline</h2>
             <p className="text-gray-600 mb-6">
                 Our assistant is currently unavailable, but we are still here to help you.
             </p>
